@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x
 
 appSetup () {
 
@@ -22,8 +23,8 @@ appSetup () {
 	if [[ ${MULTISITE,,} == "true" ]]; then
 		/usr/sbin/openvpn --config /docker.ovpn &
 		VPNPID=$!
-		echo "Sleeping 20s to ensure VPN connects ($VPNPID)";
-		sleep 20
+		echo "Sleeping 30s to ensure VPN connects ($VPNPID)";
+		sleep 30
 	fi
 
 	# Set up samba
@@ -39,7 +40,7 @@ appSetup () {
 			if [[ ${JOINSITE} == "NONE" ]]; then
 				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL
 			else
-				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site="${JOINSITE}"
+				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE}
 			fi
 		else
 			samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS}
