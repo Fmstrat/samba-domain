@@ -1,6 +1,6 @@
 # Samba Active Directory Domain Controller for Docker
 
-A tried and tested Samba Active Directory Domain Controller, built from scratch using internal DNS and kerberos and not based on existing containers. Features include:
+A tried and tested Samba Active Directory Domain Controller that works with the standard Windows management tools, built from scratch using internal DNS and kerberos and not based on existing containers.
 
 ## Environment variables for quick start
 * `DOMAIN` defaults to `SAMDOM.LOCAL` and should be set to your domain
@@ -47,7 +47,7 @@ cp /path/to/my/ovpn/MYSITE.ovpn /data/docker/containers/samba/config/openvpn/doc
 * Ensure client's are using samdom.local as the search suffix
 
 ## Keeping things updated
-* The container is stateless, so you can do a `docker rmi samba-domain` and then restart the container to rebuild packages when a security update occurs. However, this puts load on servers that isn't always required, so below are some scripts that can help minimize things by letting you know when containers have security updates that are required.
+The container is stateless, so you can do a `docker rmi samba-domain` and then restart the container to rebuild packages when a security update occurs. However, this puts load on servers that isn't always required, so below are some scripts that can help minimize things by letting you know when containers have security updates that are required.
 
 This script loops through running containers and sends you an email when security updates are required.
 ```
