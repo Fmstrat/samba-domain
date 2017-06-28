@@ -1,6 +1,6 @@
 # Samba Active Directory Domain Controller for Docker
 
-A tried and tested Samba Active Directory Domain Controller that works with the standard Windows management tools, built from scratch using internal DNS and kerberos and not based on existing containers.
+A well documented, tried and tested Samba Active Directory Domain Controller that works with the standard Windows management tools; built from scratch using internal DNS and kerberos and not based on existing containers.
 
 ## Environment variables for quick start
 * `DOMAIN` defaults to `SAMDOM.LOCAL` and should be set to your domain
