@@ -6,6 +6,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 * `DOMAIN` defaults to `SAMDOM.LOCAL` and should be set to your domain
 * `DOMAINPASS` should be set to your administrator password, be it existing or new. This can be removed from the environment after the first setup run.
 * `JOIN` defaults to `false` and means the container will provision a new domain. Set this to `true` to join an existing domain.
+* `JOINSITE` is optional and can be set to a site name when joining a domain, otherwise the default site will be used.
 * `DNSFORWARDER` is optional and if an IP such as `192.168.0.1` is supplied will forward all DNS requests samba can't resolve to that DNS server
 * `INSECURELDAP` defaults to `false`. When set to true, it removes the secure LDAP requirement. While this is not recommended for production it is required for some LDAP tools. You can remove it later from the smb.conf file stored in the config directory.
 * `MULTISITE` defaults to `false` and tells the container to connect to an OpenVPN site via an ovpn file with no password. For instance, if you have two locations where you run your domain controllers, they need to be able to interact. The VPN allows them to do that.
@@ -16,6 +17,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 * `/data/docker/containers/samba/data/:/var/lib/samba` - Stores samba data so the container can be moved to another host if required.
 * `/data/docker/containers/samba/config/samba:/etc/samba/external` - Stores the smb.conf so the container can be mored or updates can be easily made.
 * `/data/docker/containers/samba/config/openvpn/docker.ovpn:/docker.ovpn` - Optional for connecting to another site via openvpn.
+* `/data/docker/containers/samba/config/openvpn/credentials:/credentials` - Optional for connecting to another site via openvpn that requires a username/password. The format for this file should be two lines, with the username on the first, and the password on the second. Also, make sure your ovpn file contains `auth-user-pass /credentials`
 
 ## Downloading and building
 ```
@@ -25,6 +27,13 @@ git clone https://github.com/Fmstrat/samba-domain.git
 cd samba-domain
 docker build -t samba-domain .
 ```
+
+Or just use the HUB:
+
+```
+docker pull nowsci/samba-domain
+```
+
 ## Setting things up for the container
 To set things up you will first want a new IP on your host machine so that ports don't conflict. A domain controller needs a lot of ports, and will likely conflict with things like dnsmasq. The below commands will do this, and set up some required folders.
 
@@ -45,6 +54,7 @@ cp /path/to/my/ovpn/MYSITE.ovpn /data/docker/containers/samba/config/openvpn/doc
 * In some cases on Windows clients, you would join with the domain of SAMDOM, but when entering the computer domain you must enter SAMDOM.LOCAL. This seems to be the case when using most any samba based DC.
 * Make sure your client's DNS is using the DC, or that your mail DNS is relaying for the domain
 * Ensure client's are using samdom.local as the search suffix
+* If you're using a VPN, pay close attention to routes. You want want to force all traffic through the VPN
 
 ## Keeping things updated
 The container is stateless, so you can do a `docker rmi samba-domain` and then restart the container to rebuild packages when a security update occurs. However, this puts load on servers that isn't always required, so below are some scripts that can help minimize things by letting you know when containers have security updates that are required.
@@ -126,6 +136,7 @@ done;
 ```
 
 # Examples with docker run
+Keep in mind, for all examples replace `nowsci/samba-domain` with `samba-domain` if you build your own from GitHub.
 
 Start a new domain, and forward non-resolvable queries to the main DNS server
 * Local site is `192.168.3.0`
@@ -162,7 +173,7 @@ docker run -t -i \
 	-h localdc \
 	--name samba \
 	--privileged \
-	samba-domain
+	nowsci/samba-domain
 ```
 
 Join an existing domain, and forward non-resolvable queries to the main DNS server
@@ -203,7 +214,7 @@ docker run -t -i \
 	-h localdc \
 	--name samba \
 	--privileged \
-	samba-domain
+	nowsci/samba-domain
 ```
 
 Join an existing domain, forward DNS, remove security features, and connect to a remote site via openvpn
@@ -242,6 +253,7 @@ docker run -t -i \
 	-v /data/docker/containers/samba/data/:/var/lib/samba \
 	-v /data/docker/containers/samba/config/samba:/etc/samba/external \
 	-v /data/docker/containers/samba/config/openvpn/docker.ovpn:/docker.ovpn \
+	-v /data/docker/containers/samba/config/openvpn/credentials:/credentials \
 	--dns-search samdom.local \
 	--dns 192.168.3.222 \
 	--dns 192.168.3.1 \
@@ -254,7 +266,7 @@ docker run -t -i \
 	--name samba \
 	--privileged \
 	--cap-add=NET_ADMIN --device /dev/net/tun \
-	samba-domain
+	nowsci/samba-domain
 ```
 
 
@@ -279,7 +291,7 @@ services:
 # ----------- samba begin ----------- #
 
   samba:
-    image: samba-domain
+    image: nowsci/samba-domain
     container_name: samba
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -343,7 +355,7 @@ services:
 # ----------- samba begin ----------- #
 
   samba:
-    image: samba-domain
+    image: nowsci/samba-domain
     container_name: samba
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -411,13 +423,14 @@ services:
 # ----------- samba begin ----------- #
 
   samba:
-    image: samba-domain
+    image: nowsci/samba-domain
     container_name: samba
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /data/docker/containers/samba/data/:/var/lib/samba
       - /data/docker/containers/samba/config/samba:/etc/samba/external
       - /data/docker/containers/samba/config/openvpn/docker.ovpn:/docker.ovpn
+      - /data/docker/containers/samba/config/openvpn/credentials:/credentials
     environment:
       - DOMAIN=SAMDOM.LOCAL
       - DOMAINPASS=ThisIsMyAdminPassword
