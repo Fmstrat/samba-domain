@@ -478,3 +478,21 @@ services:
 
 # ----------- samba end ----------- #
 ```
+
+## Troubleshooting
+
+The most common issue is when running multi-site and seeing the below DNS replication error when checking replication with `docker exec samba samba-tool drs showrepl`
+
+```
+CN=Schema,CN=Configuration,DC=samdom,DC=local
+        Default-First-Site-Name\REMOTEDC via RPC
+                DSA object GUID: faf297a8-6cd3-4162-b204-1945e4ed5569
+                Last attempt @ Thu Jun 29 10:49:45 2017 EDT failed, result 2 (WERR_BADFILE)
+                4 consecutive failure(s).
+                Last success @ NTTIME(0)
+```
+This has nothing to do with docker, but does happen in samba setups. The key is to put the GUID host entry into the start script for docker, and restart the container. For instance, if you saw the above error, Add this to you docker command:
+```
+--add-host faf297a8-6cd3-4162-b204-1945e4ed5569._msdcs.samdom.local:192.168.6.222 \
+```
+Where `192.168.6.222` is the IP of `REMOTEDC`. You could also do this in `extra_hosts` in docker-compose.
