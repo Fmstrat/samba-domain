@@ -122,7 +122,7 @@ for IMAGE in $IMAGES; do
                 # File does exist, do a compare
                 NEW=$(curl -s "https://registry.hub.docker.com/v2/repositories/${IMAGE}/tags/")
                 OLD=$(cat "${DATAPATH}/${PARSED}")
-                if [[ "${VAR1}" == "${VAR2}" ]]; then
+                if [[ "${OLD}" == "${NEW}" ]]; then
                         echo "Image ${IMAGE} is up to date";
                 else
                         echo ${NEW} > "${DATAPATH}/${PARSED}"
