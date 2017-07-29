@@ -54,7 +54,7 @@ cp /path/to/my/ovpn/MYSITE.ovpn /data/docker/containers/samba/config/openvpn/doc
 * In some cases on Windows clients, you would join with the domain of SAMDOM, but when entering the computer domain you must enter SAMDOM.LOCAL. This seems to be the case when using most any samba based DC.
 * Make sure your client's DNS is using the DC, or that your mail DNS is relaying for the domain
 * Ensure client's are using samdom.local as the search suffix
-* If you're using a VPN, pay close attention to routes. You want want to force all traffic through the VPN
+* If you're using a VPN, pay close attention to routes. You don't want to force all traffic through the VPN
 
 ## Keeping things updated
 The container is stateless, so you can do a `docker rmi samba-domain` and then restart the container to rebuild packages when a security update occurs. However, this puts load on servers that isn't always required, so below are some scripts that can help minimize things by letting you know when containers have security updates that are required.
