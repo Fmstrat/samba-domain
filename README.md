@@ -56,6 +56,52 @@ cp /path/to/my/ovpn/MYSITE.ovpn /data/docker/containers/samba/config/openvpn/doc
 * Ensure client's are using samdom.local as the search suffix
 * If you're using a VPN, pay close attention to routes. You don't want to force all traffic through the VPN
 
+
+## Enabling file sharing
+While the Samba team does not recommend using a DC as a file server, it's understandable that some may wish to. Once the container is up and running and your `/data/docker/containers/samba/config/samba/smb.conf` file is set up after the first run, you can enable shares by shutting down the container, and making the following changes to the `smb.conf` file.
+
+In the `[global]` section, add:
+```
+        security = user
+        passdb backend = ldapsam:ldap://localhost
+        ldap suffix = dc=nowsci,dc=local
+        ldap user suffix = ou=Users
+        ldap group suffix = ou=Groups
+        ldap machine suffix = ou=Computers
+        ldap idmap suffix = ou=Idmap
+        ldap admin dn = cn=Administrator,cn=Users,dc=samdom,dc=local
+        ldap ssl = off
+        ldap passwd sync = no
+        server string = MYSERVERHOSTNAME
+        wins support = yes
+        preserve case = yes
+        short preserve case = yes
+        default case = lower
+        case sensitive = auto
+        preferred master = yes
+        unix extensions = yes
+        follow symlinks = yes
+        client ntlmv2 auth = yes
+        client lanman auth = yes
+        mangled names = no
+```
+Then add a share to the end based on how you mount the volume:
+```
+[storage]
+        comment = storage
+        path = /storage
+        public = no
+        read only = no
+        writable = yes
+        write list = @root NOWSCI\myuser
+        force user = root
+        force group = root
+        guest ok = yes
+        valid users = NOWSCI\myuser
+```
+Check the samba documentation for how to allow groups/etc.
+
+
 ## Keeping things updated
 The container is stateless, so you can do a `docker rmi samba-domain` and then restart the container to rebuild packages when a security update occurs. However, this puts load on servers that isn't always required, so below are some scripts that can help minimize things by letting you know when containers have security updates that are required.
 
