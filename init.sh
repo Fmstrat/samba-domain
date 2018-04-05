@@ -13,6 +13,7 @@ appSetup () {
 	NOCOMPLEXITY=${NOCOMPLEXITY:-false}
 	INSECURELDAP=${INSECURELDAP:-false}
 	DNSFORWARDER=${DNSFORWARDER:-NONE}
+	HOSTIP=${HOSTIP:-NONE}
 	
 	LDOMAIN=${DOMAIN,,}
 	UDOMAIN=${DOMAIN^^}
@@ -25,6 +26,13 @@ appSetup () {
 		echo "Sleeping 30s to ensure VPN connects ($VPNPID)";
 		sleep 30
 	fi
+
+        # Set host ip option
+        if [[ "$HOSTIP" != "NONE" ]]; then
+		HOSTIP_OPTION="--host-ip=$HOSTIP"
+        else
+		HOSTIP_OPTION=""
+        fi
 
 	# Set up samba
 	mv /etc/krb5.conf /etc/krb5.conf.orig
@@ -42,7 +50,7 @@ appSetup () {
 				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE}
 			fi
 		else
-			samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS}
+			samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS} ${HOSTIP_OPTION}
 			if [[ ${NOCOMPLEXITY,,} == "true" ]]; then
 				samba-tool domain passwordsettings set --complexity=off
 				samba-tool domain passwordsettings set --history-length=0
