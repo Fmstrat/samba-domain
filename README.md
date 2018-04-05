@@ -5,6 +5,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 ## Environment variables for quick start
 * `DOMAIN` defaults to `SAMDOM.LOCAL` and should be set to your domain
 * `DOMAINPASS` should be set to your administrator password, be it existing or new. This can be removed from the environment after the first setup run.
+* `HOSTIP` can be set to the IP you want to advertise.
 * `JOIN` defaults to `false` and means the container will provision a new domain. Set this to `true` to join an existing domain.
 * `JOINSITE` is optional and can be set to a site name when joining a domain, otherwise the default site will be used.
 * `DNSFORWARDER` is optional and if an IP such as `192.168.0.1` is supplied will forward all DNS requests samba can't resolve to that DNS server
@@ -194,6 +195,7 @@ docker run -t -i \
 	-e "DOMAIN=SAMDOM.LOCAL" \
 	-e "DOMAINPASS=ThisIsMyAdminPassword" \
 	-e "DNSFORWARDER=192.168.3.1" \
+	-e "HOSTIP=192.168.3.222" \
 	-p 192.168.3.222:53:53 \
 	-p 192.168.3.222:53:53/udp \
 	-p 192.168.3.222:88:88 \
