@@ -3,7 +3,7 @@
 A well documented, tried and tested Samba Active Directory Domain Controller that works with the standard Windows management tools; built from scratch using internal DNS and kerberos and not based on existing containers.
 
 ## Environment variables for quick start
-* `DOMAIN` defaults to `SAMDOM.LOCAL` and should be set to your domain
+* `DOMAIN` defaults to `CORP.EXAMPLE.COM` and should be set to your domain
 * `DOMAINPASS` should be set to your administrator password, be it existing or new. This can be removed from the environment after the first setup run.
 * `HOSTIP` can be set to the IP you want to advertise.
 * `JOIN` defaults to `false` and means the container will provision a new domain. Set this to `true` to join an existing domain.
@@ -52,9 +52,9 @@ cp /path/to/my/ovpn/MYSITE.ovpn /data/docker/containers/samba/config/openvpn/doc
 ```
 
 ## Things to keep in mind
-* In some cases on Windows clients, you would join with the domain of SAMDOM, but when entering the computer domain you must enter SAMDOM.LOCAL. This seems to be the case when using most any samba based DC.
+* In some cases on Windows clients, you would join with the domain of CORP, but when entering the computer domain you must enter CORP.EXAMPLE.COM. This seems to be the case when using most any samba based DC.
 * Make sure your client's DNS is using the DC, or that your mail DNS is relaying for the domain
-* Ensure client's are using samdom.local as the search suffix
+* Ensure client's are using corp.example.com as the search suffix
 * If you're using a VPN, pay close attention to routes. You don't want to force all traffic through the VPN
 
 
@@ -65,12 +65,12 @@ In the `[global]` section, add:
 ```
         security = user
         passdb backend = ldapsam:ldap://localhost
-        ldap suffix = dc=nowsci,dc=local
+        ldap suffix = dc=corp,dc=example,dc=com
         ldap user suffix = ou=Users
         ldap group suffix = ou=Groups
         ldap machine suffix = ou=Computers
         ldap idmap suffix = ou=Idmap
-        ldap admin dn = cn=Administrator,cn=Users,dc=samdom,dc=local
+        ldap admin dn = cn=Administrator,cn=Users,dc=corp,dc=example,dc=com
         ldap ssl = off
         ldap passwd sync = no
         server string = MYSERVERHOSTNAME
@@ -192,7 +192,7 @@ Start a new domain, and forward non-resolvable queries to the main DNS server
 
 ```
 docker run -t -i \
-	-e "DOMAIN=SAMDOM.LOCAL" \
+	-e "DOMAIN=CORP.EXAMPLE.COM" \
 	-e "DOMAINPASS=ThisIsMyAdminPassword" \
 	-e "DNSFORWARDER=192.168.3.1" \
 	-e "HOSTIP=192.168.3.222" \
@@ -214,10 +214,10 @@ docker run -t -i \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v /data/docker/containers/samba/data/:/var/lib/samba \
 	-v /data/docker/containers/samba/config/samba:/etc/samba/external \
-	--dns-search samdom.local \
+	--dns-search corp.example.com \
 	--dns 192.168.3.222 \
 	--dns 192.168.3.1 \
-	--add-host localdc.samdom.local:192.168.3.222 \
+	--add-host localdc.corp.example.com:192.168.3.222 \
 	-h localdc \
 	--name samba \
 	--privileged \
@@ -232,10 +232,11 @@ Join an existing domain, and forward non-resolvable queries to the main DNS serv
 
 ```
 docker run -t -i \
-	-e "DOMAIN=SAMDOM.LOCAL" \
+	-e "DOMAIN=CORP.EXAMPLE.COM" \
 	-e "DOMAINPASS=ThisIsMyAdminPassword" \
 	-e "JOIN=true" \
 	-e "DNSFORWARDER=192.168.3.1" \
+	-e "HOSTIP=192.168.3.222" \
 	-p 192.168.3.222:53:53 \
 	-p 192.168.3.222:53:53/udp \
 	-p 192.168.3.222:88:88 \
@@ -254,11 +255,11 @@ docker run -t -i \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v /data/docker/containers/samba/data/:/var/lib/samba \
 	-v /data/docker/containers/samba/config/samba:/etc/samba/external \
-	--dns-search samdom.local \
+	--dns-search corp.example.com \
 	--dns 192.168.3.222 \
 	--dns 192.168.3.1 \
 	--dns 192.168.3.201 \
-	--add-host localdc.samdom.local:192.168.3.222 \
+	--add-host localdc.corp.example.com:192.168.3.222 \
 	-h localdc \
 	--name samba \
 	--privileged \
@@ -275,13 +276,14 @@ Join an existing domain, forward DNS, remove security features, and connect to a
 
 ```
 docker run -t -i \
-	-e "DOMAIN=SAMDOM.LOCAL" \
+	-e "DOMAIN=CORP.EXAMPLE.COM" \
 	-e "DOMAINPASS=ThisIsMyAdminPassword" \
 	-e "JOIN=true" \
 	-e "DNSFORWARDER=192.168.3.1" \
 	-e "MULTISITE=true" \
 	-e "NOCOMPLEXITY=true" \
 	-e "INSECURELDAP=true" \
+	-e "HOSTIP=192.168.3.222" \
 	-p 192.168.3.222:53:53 \
 	-p 192.168.3.222:53:53/udp \
 	-p 192.168.3.222:88:88 \
@@ -302,13 +304,13 @@ docker run -t -i \
 	-v /data/docker/containers/samba/config/samba:/etc/samba/external \
 	-v /data/docker/containers/samba/config/openvpn/docker.ovpn:/docker.ovpn \
 	-v /data/docker/containers/samba/config/openvpn/credentials:/credentials \
-	--dns-search samdom.local \
+	--dns-search corp.example.com \
 	--dns 192.168.3.222 \
 	--dns 192.168.3.1 \
 	--dns 192.168.6.222 \
 	--dns 192.168.3.201 \
-	--add-host localdc.samdom.local:192.168.3.222 \
-	--add-host remotedc.samdom.local:192.168.6.222 \
+	--add-host localdc.corp.example.com:192.168.3.222 \
+	--add-host remotedc.corp.example.com:192.168.6.222 \
 	--add-host remotedc:192.168.6.222 \
 	-h localdc \
 	--name samba \
@@ -346,9 +348,10 @@ services:
       - /data/docker/containers/samba/data/:/var/lib/samba
       - /data/docker/containers/samba/config/samba:/etc/samba/external
     environment:
-      - DOMAIN=SAMDOM.LOCAL
+      - DOMAIN=CORP.EXAMPLE.COM
       - DOMAINPASS=ThisIsMyAdminPassword
       - DNSFORWARDER=192.168.3.1
+      - HOSTIP=192.168.3.222
     networks:
       - extnet
     ports:
@@ -368,12 +371,12 @@ services:
       - 192.168.3.222:1024-1044:1024-1044
       - 192.168.3.222:3268-3269:3268-3269
     dns_search:
-      - samdom.local
+      - corp.example.com
     dns:
       - 192.168.3.222
       - 192.168.3.1
     extra_hosts:
-      - localdc.samdom.local:192.168.3.222
+      - localdc.corp.example.com:192.168.3.222
     hostname: localdc
     cap_add:
       - NET_ADMIN
@@ -410,10 +413,11 @@ services:
       - /data/docker/containers/samba/data/:/var/lib/samba
       - /data/docker/containers/samba/config/samba:/etc/samba/external
     environment:
-      - DOMAIN=SAMDOM.LOCAL
+      - DOMAIN=CORP.EXAMPLE.COM
       - DOMAINPASS=ThisIsMyAdminPassword
       - JOIN=true
       - DNSFORWARDER=192.168.3.1
+      - HOSTIP=192.168.3.222
     networks:
       - extnet
     ports:
@@ -433,13 +437,13 @@ services:
       - 192.168.3.222:1024-1044:1024-1044
       - 192.168.3.222:3268-3269:3268-3269
     dns_search:
-      - samdom.local
+      - corp.example.com
     dns:
       - 192.168.3.222
       - 192.168.3.1
       - 192.168.3.201
     extra_hosts:
-      - localdc.samdom.local:192.168.3.222
+      - localdc.corp.example.com:192.168.3.222
     hostname: localdc
     cap_add:
       - NET_ADMIN
@@ -480,13 +484,14 @@ services:
       - /data/docker/containers/samba/config/openvpn/docker.ovpn:/docker.ovpn
       - /data/docker/containers/samba/config/openvpn/credentials:/credentials
     environment:
-      - DOMAIN=SAMDOM.LOCAL
+      - DOMAIN=CORP.EXAMPLE.COM
       - DOMAINPASS=ThisIsMyAdminPassword
       - JOIN=true
       - DNSFORWARDER=192.168.3.1
       - MULTISITE=true
       - NOCOMPLEXITY=true
       - INSECURELDAP=true
+      - HOSTIP=192.168.3.222
     networks:
       - extnet
     ports:
@@ -506,15 +511,15 @@ services:
       - 192.168.3.222:1024-1044:1024-1044
       - 192.168.3.222:3268-3269:3268-3269
     dns_search:
-      - samdom.local
+      - corp.example.com
     dns:
       - 192.168.3.222
       - 192.168.3.1
       - 192.168.6.222
       - 192.168.3.201
     extra_hosts:
-      - localdc.samdom.local:192.168.3.222
-      - remotedc.samdom.local:192.168.6.222
+      - localdc.corp.example.com:192.168.3.222
+      - remotedc.corp.example.com:192.168.6.222
       - remotedc:192.168.6.222
     hostname: localdc
     cap_add:
@@ -532,7 +537,7 @@ services:
 The most common issue is when running multi-site and seeing the below DNS replication error when checking replication with `docker exec samba samba-tool drs showrepl`
 
 ```
-CN=Schema,CN=Configuration,DC=samdom,DC=local
+CN=Schema,CN=Configuration,DC=corp,DC=example,DC=local
         Default-First-Site-Name\REMOTEDC via RPC
                 DSA object GUID: faf297a8-6cd3-4162-b204-1945e4ed5569
                 Last attempt @ Thu Jun 29 10:49:45 2017 EDT failed, result 2 (WERR_BADFILE)
@@ -541,6 +546,6 @@ CN=Schema,CN=Configuration,DC=samdom,DC=local
 ```
 This has nothing to do with docker, but does happen in samba setups. The key is to put the GUID host entry into the start script for docker, and restart the container. For instance, if you saw the above error, Add this to you docker command:
 ```
---add-host faf297a8-6cd3-4162-b204-1945e4ed5569._msdcs.samdom.local:192.168.6.222 \
+--add-host faf297a8-6cd3-4162-b204-1945e4ed5569._msdcs.corp.example.com:192.168.6.222 \
 ```
 Where `192.168.6.222` is the IP of `REMOTEDC`. You could also do this in `extra_hosts` in docker-compose.
