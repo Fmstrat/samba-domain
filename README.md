@@ -532,6 +532,9 @@ services:
 # ----------- samba end ----------- #
 ```
 
+## Joining the domain with Ubuntu
+For joining the domain with any client, everything should work just as you would expect if the active directory server was Windows based. For Ubuntu, there are many guides availble for joining, but to make things easier you can find an easily configurable script for joining your domain here: https://raw.githubusercontent.com/Fmstrat/samba-domain/master/ubuntu-join-domain.sh
+
 ## Troubleshooting
 
 The most common issue is when running multi-site and seeing the below DNS replication error when checking replication with `docker exec samba samba-tool drs showrepl`
