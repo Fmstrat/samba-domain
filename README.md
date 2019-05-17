@@ -315,7 +315,11 @@ docker run -t -i \
 	-h localdc \
 	--name samba \
 	--privileged \
-	--cap-add=NET_ADMIN --device /dev/net/tun \
+	--cap-add=NET_ADMIN \
+	--cap-add=SYS_NICE \
+	--cap-add=SYS_RESOURCES \
+	--cap-add=SYS_TIME \
+	--device /dev/net/tun \
 	nowsci/samba-domain
 ```
 
@@ -380,6 +384,9 @@ services:
     hostname: localdc
     cap_add:
       - NET_ADMIN
+      - SYS_NICE
+      - SYS_RESOURCE
+      - SYS_TIME
     devices:
       - /dev/net/tun
     privileged: true
@@ -447,6 +454,9 @@ services:
     hostname: localdc
     cap_add:
       - NET_ADMIN
+      - SYS_NICE
+      - SYS_RESOURCE
+      - SYS_TIME
     devices:
       - /dev/net/tun
     privileged: true
@@ -524,6 +534,9 @@ services:
     hostname: localdc
     cap_add:
       - NET_ADMIN
+      - SYS_NICE
+      - SYS_RESOURCE
+      - SYS_TIME
     devices:
       - /dev/net/tun
     privileged: true

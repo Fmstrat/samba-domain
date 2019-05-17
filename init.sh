@@ -88,6 +88,8 @@ appSetup () {
 	echo "" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "[program:samba]" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "command=/usr/sbin/samba -i" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "[program:ntpd]" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "command=/usr/sbin/ntpd -c /etc/ntpd.conf -n" >> /etc/supervisor/conf.d/supervisord.conf
 	if [[ ${MULTISITE,,} == "true" ]]; then
 		if [[ -n $VPNPID ]]; then
 			kill $VPNPID
@@ -96,7 +98,22 @@ appSetup () {
 		echo "[program:openvpn]" >> /etc/supervisor/conf.d/supervisord.conf
 		echo "command=/usr/sbin/openvpn --config /docker.ovpn" >> /etc/supervisor/conf.d/supervisord.conf
 	fi
-	
+
+	# Set up ntpd
+	echo "server 127.127.1.0" > /etc/ntpd.conf
+	echo "fudge  127.127.1.0 stratum 10" >> /etc/ntpd.conf
+	echo "server 0.pool.ntp.org     iburst prefer" >> /etc/ntpd.conf
+	echo "server 1.pool.ntp.org     iburst prefer" >> /etc/ntpd.conf
+	echo "server 2.pool.ntp.org     iburst prefer" >> /etc/ntpd.conf
+	echo "driftfile       /var/lib/ntp/ntp.drift" >> /etc/ntpd.conf
+	echo "logfile         /var/log/ntp" >> /etc/ntpd.conf
+	echo "ntpsigndsocket  /usr/local/samba/var/lib/ntp_signd/" >> /etc/ntpd.conf
+	echo "restrict default kod nomodify notrap nopeer mssntp" >> /etc/ntpd.conf
+	echo "restrict 127.0.0.1" >> /etc/ntpd.conf
+	echo "restrict 0.pool.ntp.org   mask 255.255.255.255    nomodify notrap nopeer noquery" >> /etc/ntpd.conf
+	echo "restrict 1.pool.ntp.org   mask 255.255.255.255    nomodify notrap nopeer noquery" >> /etc/ntpd.conf
+	echo "restrict 2.pool.ntp.org   mask 255.255.255.255    nomodify notrap nopeer noquery" >> /etc/ntpd.conf
+
 	appStart
 }
 
@@ -107,6 +124,8 @@ appStart () {
 case "$1" in
 	start)
 		if [[ -f /etc/samba/external/smb.conf ]]; then
+			chown root:ntp /var/lib/samba/ntp_signd/
+			chmod 750 /var/lib/samba/ntp_signd/
 			cp /etc/samba/external/smb.conf /etc/samba/smb.conf
 			appStart
 		else
