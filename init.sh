@@ -6,7 +6,7 @@ appSetup () {
 
 	# Set variables
 	DOMAIN=${DOMAIN:-SAMDOM.LOCAL}
-	DOMAINPASS=${DOMAINPASS:-youshouldsetapassword}
+	DOMAINPASS=${DOMAINPASS:-youshouldsetapassword^123}
 	JOIN=${JOIN:-false}
 	JOINSITE=${JOINSITE:-NONE}
 	MULTISITE=${MULTISITE:-false}
