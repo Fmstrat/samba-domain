@@ -77,9 +77,9 @@ appSetup () {
 				" /etc/samba/smb.conf
 		fi
 		# Once we are set up, we'll make a file so that we know to use it if we ever spin this up again
-		cp /etc/samba/smb.conf /etc/samba/external/smb.conf
+		cp -f /etc/samba/smb.conf /etc/samba/external/smb.conf
 	else
-		cp /etc/samba/external/smb.conf /etc/samba/smb.conf
+		cp -f /etc/samba/external/smb.conf /etc/samba/smb.conf
 	fi
         
 	# Set up supervisor
@@ -107,7 +107,7 @@ appStart () {
 case "$1" in
 	start)
 		if [[ -f /etc/samba/external/smb.conf ]]; then
-			cp /etc/samba/external/smb.conf /etc/samba/smb.conf
+			cp -f /etc/samba/external/smb.conf /etc/samba/smb.conf
 			appStart
 		else
 			echo "Config file is missing."
