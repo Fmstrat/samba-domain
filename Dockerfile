@@ -1,10 +1,8 @@
-FROM ubuntu:xenial
+FROM ubuntu:18.04
 
 LABEL maintainer="Fmstrat <fmstrat@NOSPAM.NO>"
 
 ENV DEBIAN_FRONTEND noninteractive
-
-COPY init.sh /init.sh
 
 RUN apt-get update \
     && apt-get upgrade -y \
@@ -19,5 +17,7 @@ RUN apt-get update \
     && apt-get autoremove --yes \
     && rm -rf /var/lib/{apt,dpkg,cache,log}/ \
     && rm -fr /tmp/* /var/tmp/*
+
+COPY init.sh /init.sh
 
 CMD /init.sh setup
