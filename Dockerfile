@@ -1,17 +1,23 @@
 FROM ubuntu:18.04
-MAINTAINER Fmstrat <fmstrat@NOSPAM.NO>
+
+LABEL maintainer="Fmstrat <fmstrat@NOSPAM.NO>"
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update && apt-get upgrade -y
+RUN apt-get update \
+    && apt-get upgrade -y \
+    # Install all required packages \
+    && apt-get install -y pkg-config attr acl samba smbclient ldap-utils winbind libnss-winbind libpam-winbind krb5-user krb5-kdc supervisor \
+    # line below is for multi-site config (ping is for testing later) \
+    && apt-get install -y openvpn inetutils-ping \
+    # Set up script \
+    && chmod 755 /init.sh \
+    # cleanup \
+    && apt-get clean autoclean \
+    && apt-get autoremove --yes \
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/ \
+    && rm -fr /tmp/* /var/tmp/*
 
-# Install all apps
-# The third line is for multi-site config (ping is for testing later)
-RUN apt-get install -y pkg-config
-RUN apt-get install -y attr acl samba smbclient ldap-utils winbind libnss-winbind libpam-winbind krb5-user krb5-kdc supervisor
-RUN apt-get install -y openvpn inetutils-ping
+COPY init.sh /init.sh
 
-# Set up script and run
-ADD init.sh /init.sh
-RUN chmod 755 /init.sh
 CMD /init.sh setup
