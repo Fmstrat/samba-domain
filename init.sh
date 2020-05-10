@@ -107,7 +107,7 @@ appSetup () {
 	echo "server 2.pool.ntp.org     iburst prefer" >> /etc/ntpd.conf
 	echo "driftfile       /var/lib/ntp/ntp.drift" >> /etc/ntpd.conf
 	echo "logfile         /var/log/ntp" >> /etc/ntpd.conf
-	echo "ntpsigndsocket  /usr/local/samba/var/lib/ntp_signd/" >> /etc/ntpd.conf
+	echo "ntpsigndsocket  /var/lib/ntp_signd/" >> /etc/ntpd.conf
 	echo "restrict default kod nomodify notrap nopeer mssntp" >> /etc/ntpd.conf
 	echo "restrict 127.0.0.1" >> /etc/ntpd.conf
 	echo "restrict 0.pool.ntp.org   mask 255.255.255.255    nomodify notrap nopeer noquery" >> /etc/ntpd.conf
