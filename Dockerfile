@@ -11,7 +11,7 @@ RUN apt-get update \
     # line below is for multi-site config (ping is for testing later) \
     && apt-get install -y openvpn inetutils-ping \
     # Set up script \
-    && chmod 755 /init.sh \
+    #&& chmod 755 /init.sh \
     # cleanup \
     && apt-get clean autoclean \
     && apt-get autoremove --yes \
