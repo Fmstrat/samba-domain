@@ -101,17 +101,17 @@ appSetup () {
 }
 
 appStart () {
-	/usr/bin/supervisord
+	if [[ -f /etc/samba/external/smb.conf ]]; then
+		cp /etc/samba/external/smb.conf /etc/samba/smb.conf
+		/usr/bin/supervisord
+	else
+		echo "Config file is missing."
+	fi
 }
 
 case "$1" in
 	start)
-		if [[ -f /etc/samba/external/smb.conf ]]; then
-			cp /etc/samba/external/smb.conf /etc/samba/smb.conf
-			appStart
-		else
-			echo "Config file is missing."
-		fi
+		appStart
 		;;
 	setup)
 		# If the supervisor conf isn't there, we're spinning up a new container
