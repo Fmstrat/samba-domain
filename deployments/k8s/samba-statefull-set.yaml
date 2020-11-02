@@ -1,0 +1,175 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: smbns
+  labels:
+    name: smbns
+    role: internal_services
+    company: ziplex
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: samba-pdc
+  namespace: smbns
+spec:
+  selector:
+    app: samba
+  type: ClusterIP
+  ports:
+  - name: dns
+    protocol: UDP
+    port: 53
+    targetPort: 53
+  - name: dns-tcp
+    protocol: TCP
+    port: 53
+    targetPort: 53
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: samba
+  namespace: smbns
+spec:
+  replicas: 1
+  serviceName: samba-pdc
+  selector:
+    matchLabels:
+      app: samba
+  template:
+    metadata:
+      labels:
+        app: samba
+    spec:
+      volumes:
+        - name: samba-pv-data
+          persistentVolumeClaim:
+            claimName: samba-pv-data-claim
+        - name: samba-pv-config
+          persistentVolumeClaim:
+            claimName: samba-pv-config-claim
+
+      containers:
+        - name: pdc
+          image: ziplex/samba-ad:20.04
+          env:
+          - name: DOMAIN
+            value: ziplex.loc
+          - name: DOMAINPASS
+            value: YOUR_PASSWORD
+          - name: DNSFORWARDER
+            value: 8.8.8.8
+          - name: INSECURELDAP
+            value: "true"
+          ports:
+          - containerPort: 53
+            name: dns
+            protocol: UDP
+          - containerPort: 53
+            name: dns-tcp
+          - containerPort: 389
+            name: ldap
+          - containerPort: 88
+            name: kerberos
+          - containerPort: 135
+            name: epmap
+          - containerPort: 139
+            name: netbios-ssn
+          - containerPort: 138
+            name: netbios-dgm
+          - containerPort: 445
+            name: microsoft-ds
+          - containerPort: 464
+            name: kpasswd
+          - containerPort: 636
+            name: ldaps
+          - containerPort: 3268
+            name: ldp-glob-catalo
+          - containerPort: 3269
+            name: ldps-glob-cata
+          # securityContext:    #uncoment for first running only
+          #   privileged: true  #
+          volumeMounts:
+          - mountPath: "/var/lib/samba"
+            name: samba-pv-data
+          - mountPath: "/etc/samba/external"
+            name: samba-pv-config
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: image-pull-secret
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: samba-pv-data-claim
+  namespace: smbns
+spec:
+  storageClassName: samba-storage-class
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: samba-pv-config-claim
+  namespace: smbns
+spec:
+  storageClassName: samba-storage-class
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Mi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: samba-pv-data
+  namespace: smbns
+  labels:
+    type: local
+spec:
+  storageClassName: samba-storage-class
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/srv/kubernetes_volumes/smbns/samba/data"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: samba-pv-config
+  namespace: smbns
+  labels:
+    type: local
+spec:
+  storageClassName: samba-storage-class
+  capacity:
+    storage: 10Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/srv/kubernetes_volumes/smbns/samba/config"
+
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: samba-storage-class
+  namespace: smbns
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+  labels:
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain

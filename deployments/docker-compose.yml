@@ -1,0 +1,61 @@
+version: '3.5'
+services:
+  samba-ad:
+    container_name: pdc
+    hostname: pdc
+    image: ziplex/samba-ad:20.04
+    build:
+      context: .
+      dockerfile: Dockerfile
+    dns:
+        - 8.8.8.8
+        - 1.1.1.1
+
+    dns_search: ziplex.loc
+    extra_hosts:
+        - "pdc.ziplex.loc:172.17.230.9"
+    networks:
+      - extnet
+    ports:
+      - 172.17.230.9:53:53
+      - 172.17.230.9:53:53/udp
+      - 172.17.230.9:88:88
+      - 172.17.230.9:88:88/udp
+      - 172.17.230.9:135:135
+      - 172.17.230.9:137-138:137-138/udp
+      - 172.17.230.9:139:139
+      - 172.17.230.9:389:389
+      - 172.17.230.9:389:389/udp
+      - 172.17.230.9:445:445
+      - 172.17.230.9:464:464
+      - 172.17.230.9:464:464/udp
+      - 172.17.230.9:636:636
+      - 172.17.230.9:49152:49152
+      - 172.17.230.9:1024-1044:1024-1044
+      - 172.17.230.9:3268-3269:3268-3269
+    #network_mode: host
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./samba/data:/var/lib/samba
+      - ./samba/config:/etc/samba/external
+      - ./samba/share:/share
+      - ./samba/nsswitch.conf:/etc/nsswitch.conf
+      # - ./samba/resolv.conf:/etc/resolv.conf:ro
+    environment:
+     - DOMAIN=ziplex.loc
+     - DOMAINPASS=SambaAdmPASSWD
+     - DNSFORWARDER=8.8.8.8
+     - HOSTIP=172.17.230.9
+    # - JOIN=false
+    # - JOINSITE=""
+    # - MULTISITE=false
+    # - NOCOMPLEXITY=false
+     - INSECURELDAP=true
+    # devices:
+    #   - /dev/net/tun
+    # privileged: true
+    restart: always
+networks:
+  extnet:
+    external: true
+
