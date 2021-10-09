@@ -2,6 +2,8 @@
 
 set -e
 
+SUP_CONF="/etc/supervisor/supervisord.conf"
+
 appSetup () {
 
 	# Set variables
@@ -86,22 +88,25 @@ appSetup () {
 	else
 		cp -f /etc/samba/external/smb.conf /etc/samba/smb.conf
 	fi
-        
+
 	# Set up supervisor
-	echo "[supervisord]" > /etc/supervisor/conf.d/supervisord.conf
-	echo "nodaemon=true" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "[program:ntpd]" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "command=/usr/sbin/ntpd -c /etc/ntpd.conf -n" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "[program:samba]" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "command=/usr/sbin/samba -i" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "[supervisord]" > ${SUP_CONF}
+	echo "nodaemon=true" >> ${SUP_CONF}
+	echo "user=root" >> ${SUP_CONF}
+	echo "pidfile=/var/run/supervisord.pid" >> ${SUP_CONF}
+	echo "" >> ${SUP_CONF}
+	echo "[program:ntpd]" >> ${SUP_CONF}
+	echo "command=/usr/sbin/ntpd -c /etc/ntpd.conf -n" >> ${SUP_CONF}
+	echo "" >> ${SUP_CONF}
+	echo "[program:samba]" >> ${SUP_CONF}
+	echo "command=/usr/sbin/samba -i" >> ${SUP_CONF}
 	if [[ ${MULTISITE,,} == "true" ]]; then
 		if [[ -n $VPNPID ]]; then
 			kill $VPNPID
 		fi
-		echo "" >> /etc/supervisor/conf.d/supervisord.conf
-		echo "[program:openvpn]" >> /etc/supervisor/conf.d/supervisord.conf
-		echo "command=/usr/sbin/openvpn --config /docker.ovpn" >> /etc/supervisor/conf.d/supervisord.conf
+		echo "" >> ${SUP_CONF}
+		echo "[program:openvpn]" >> ${SUP_CONF}
+		echo "command=/usr/sbin/openvpn --config /docker.ovpn" >> ${SUP_CONF}
 	fi
 
 	echo "server 127.127.1.0" > /etc/ntpd.conf
@@ -169,7 +174,7 @@ schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
 }
 
 appStart () {
-	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
+	/usr/bin/supervisord -c ${SUP_CONF} > /var/log/supervisor/supervisor.log 2>&1 &
 	if [ "${1}" = "true" ]; then
 		echo "Sleeping 10 before checking on Domain Users of gid 3000000 and setting up sshPublicKey"
 		sleep 10
