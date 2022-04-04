@@ -5,6 +5,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 ## Environment variables for quick start
 * `DOMAIN` defaults to `CORP.EXAMPLE.COM` and should be set to your domain
 * `DOMAINPASS` should be set to your administrator password, be it existing or new. This can be removed from the environment after the first setup run.
+* `NBDOMAIN` defaults to the first part of your `DOMAIN`. Set this value to change the _NetBIOS Domain_ of your active directory  
 * `HOSTIP` can be set to the IP you want to advertise.
 * `JOIN` defaults to `false` and means the container will provision a new domain. Set this to `true` to join an existing domain.
 * `JOINSITE` is optional and can be set to a site name when joining a domain, otherwise the default site will be used.

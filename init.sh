@@ -7,6 +7,7 @@ appSetup () {
 	# Set variables
 	DOMAIN=${DOMAIN:-SAMDOM.LOCAL}
 	DOMAINPASS=${DOMAINPASS:-youshouldsetapassword}
+	NBDOMAIN=${NBDOMAIN:-NONE}
 	JOIN=${JOIN:-false}
 	JOINSITE=${JOINSITE:-NONE}
 	MULTISITE=${MULTISITE:-false}
@@ -17,7 +18,12 @@ appSetup () {
 	
 	LDOMAIN=${DOMAIN,,}
 	UDOMAIN=${DOMAIN^^}
-	URDOMAIN=${UDOMAIN%%.*}
+
+	if [[ ${NBDOMAIN} == "NONE" ]]; then
+		URDOMAIN=${UDOMAIN%%.*}
+	else
+		URDOMAIN=${NBDOMAIN}
+	fi
 
 	# If multi-site, we need to connect to the VPN before joining the domain
 	if [[ ${MULTISITE,,} == "true" ]]; then
