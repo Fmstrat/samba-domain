@@ -503,6 +503,7 @@ Usage:
         domain create-user <user>
         domain delete-user <user>
         domain change-password <user>
+        domain edit <user or group>
         domain add-user-to-group <user> <group>
         domain remove-user-from-group <user> <group>
         domain update-ip <domain> <controller> <oldip> <newip>

@@ -19,6 +19,8 @@ RUN \
         supervisor \
         openvpn \
         inetutils-ping \
+        ldb-tools \
+        vim \
         ntp &&\
     apt-get clean autoclean &&\
     apt-get autoremove --yes &&\

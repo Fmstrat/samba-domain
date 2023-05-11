@@ -10,10 +10,6 @@ fi
 
 #--------------------------------------------
 
-ST="samba-tool"
-WI="wbinfo"
-LD="ldapsearch"
-
 function usage() {
 	echo '
 Usage:
@@ -28,6 +24,7 @@ Usage:
 	domain create-user <user>
 	domain delete-user <user>
 	domain change-password <user>
+	domain edit <user or group>
 	domain add-user-to-group <user> <group>
 	domain remove-user-from-group <user> <group>
 	domain update-ip <domain> <controller> <oldip> <newip>
@@ -36,48 +33,51 @@ Usage:
 
 case "${1}" in
 	info)
-		${WI} -D CORP
+		wbinfo -D CORP
 		;;
 	ldapinfo)
-		${LD} -b "${DOMAIN_DC}"
+		ldapsearch -b "${DOMAIN_DC}"
+		;;
+	edit)
+		ldbedit -H /var/lib/samba/private/sam.ldb "samaccountname=${2}"
 		;;
 	groups)
-		${WI} -g
+		wbinfo -g
 		;;
 	group)
 		echo ""
 		echo "Info"
 		echo "----"
-		${WI} --group-info ${2}
+		wbinfo --group-info ${2}
 		echo ""
 		echo "Members"
 		echo "-------"
-		${ST} group listmembers ${2}
+		samba-tool group listmembers ${2}
 		echo ""
 		;;
 	users)
-		#${ST} user list
-		${WI} -u
+		#samba-tool user list
+		wbinfo -u
 		;;
 	user)
 		echo ""
 		echo "User:"
 		echo "-----"
-		${WI} -i ${2}
+		wbinfo -i ${2}
 		echo ""
 		echo "Groups:"
 		echo "-----"
-		GL=$(${WI} -r ${2} | sed 's/\r//g')
+		GL=$(wbinfo -r ${2} | sed 's/\r//g')
 		for G in ${GL}; do
-			${WI} --gid-info ${G}
+			wbinfo --gid-info ${G}
 		done
 		echo ""
 		;;
 	create-group)
-		${ST} group add ${2}
+		samba-tool group add ${2}
 		;;
 	delete-group)
-		${ST} group delete ${2}
+		samba-tool group delete ${2}
 		;;
 	create-user)
 		echo -n "Firstname: "
@@ -85,24 +85,24 @@ case "${1}" in
 		echo -n "Lastname: "
 		read L
 		E="${2}@${DOMAIN_EMAIL}"
-		${ST} user create ${2} --surname ${L} --given-name ${F} --mail-address ${E}
-		${ST} user setexpiry ${2} --noexpiry
+		samba-tool user create ${2} --surname ${L} --given-name ${F} --mail-address ${E}
+		samba-tool user setexpiry ${2} --noexpiry
 		;;
 	delete-user)
-		${ST} user delete ${2}
+		samba-tool user delete ${2}
 		;;
 	change-password)
-		${ST} user setpassword ${2}
+		samba-tool user setpassword ${2}
 		;;
 	add-user-to-group)
-		${ST} group addmembers "${3}" "${2}"
+		samba-tool group addmembers "${3}" "${2}"
 		;;
 	remove-user-from-group)
-		${ST} group removemembers "${3}" "${2}"
+		samba-tool group removemembers "${3}" "${2}"
 		;;
 	update-ip)
-		${ST} dns update 127.0.0.1 ${2} ${3} A ${4} ${5} -U administrator
-		${ST} dns update 127.0.0.1 ${2} @ A ${4} ${5} -U administrator
+		samba-tool dns update 127.0.0.1 ${2} ${3} A ${4} ${5} -U administrator
+		samba-tool dns update 127.0.0.1 ${2} @ A ${4} ${5} -U administrator
 		;;
 	*)
 		usage;
