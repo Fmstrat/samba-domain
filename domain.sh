@@ -28,6 +28,7 @@ Usage:
 	domain add-user-to-group <user> <group>
 	domain remove-user-from-group <user> <group>
 	domain update-ip <domain> <controller> <oldip> <newip>
+	domain flush-cache
 ';
 }
 
@@ -103,6 +104,9 @@ case "${1}" in
 	update-ip)
 		samba-tool dns update 127.0.0.1 ${2} ${3} A ${4} ${5} -U administrator
 		samba-tool dns update 127.0.0.1 ${2} @ A ${4} ${5} -U administrator
+		;;
+	flush-cache)
+		net cache flush
 		;;
 	*)
 		usage;
