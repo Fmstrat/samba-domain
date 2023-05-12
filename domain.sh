@@ -151,13 +151,13 @@ sshPublicKey: ${3}"
 			MOD="dn: ${DN}
 changetype: modify
 add: jpegPhoto
-jpegPhoto: ${3}"
+jpegPhoto::${3}"
 			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
 		else
 			MOD="dn: ${DN}
 changetype: modify
 replace: jpegPhoto
-jpegPhoto: ${3}"
+jpegPhoto::${3}"
 			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
 		fi
 		;;
@@ -169,13 +169,13 @@ jpegPhoto: ${3}"
 			MOD="dn: ${DN}
 changetype: modify
 add: jpegPhoto
-jpegPhoto: ${B64}"
+jpegPhoto::${B64}"
 			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
 		else
 			MOD="dn: ${DN}
 changetype: modify
 replace: jpegPhoto
-jpegPhoto: ${B64}"
+jpegPhoto::${B64}"
 			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
 		fi
 		;;
