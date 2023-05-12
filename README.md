@@ -267,10 +267,6 @@ Start a new domain, and forward non-resolvable queries to the main DNS server
 ```
 version: '2'
 
-networks:
-  extnet:
-    external: true
-
 services:
 
 # ----------- samba begin ----------- #
@@ -289,8 +285,6 @@ services:
       - DOMAINPASS=ThisIsMyAdminPassword^123
       - DNSFORWARDER=192.168.3.1
       - HOSTIP=192.168.3.222
-    networks:
-      - extnet
     ports:
       - 192.168.3.222:53:53
       - 192.168.3.222:53:53/udp
@@ -338,10 +332,6 @@ Join an existing domain, and forward non-resolvable queries to the main DNS serv
 ```
 version: '2'
 
-networks:
-  extnet:
-    external: true
-
 services:
 
 # ----------- samba begin ----------- #
@@ -361,8 +351,6 @@ services:
       - JOIN=true
       - DNSFORWARDER=192.168.3.1
       - HOSTIP=192.168.3.222
-    networks:
-      - extnet
     ports:
       - 192.168.3.222:53:53
       - 192.168.3.222:53:53/udp
@@ -413,10 +401,6 @@ Join an existing domain, forward DNS, remove security features, and connect to a
 ```
 version: '2'
 
-networks:
-  extnet:
-    external: true
-
 services:
 
 # ----------- samba begin ----------- #
@@ -441,8 +425,6 @@ services:
       - NOCOMPLEXITY=true
       - INSECURELDAP=true
       - HOSTIP=192.168.3.222
-    networks:
-      - extnet
     ports:
       - 192.168.3.222:53:53
       - 192.168.3.222:53:53/udp
