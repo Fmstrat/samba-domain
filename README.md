@@ -507,6 +507,7 @@ Usage:
         domain add-user-to-group <user> <group>
         domain remove-user-from-group <user> <group>
         domain update-ip <domain> <controller> <oldip> <newip>
+        domain flush-cache
 ```
 
 ## Joining the domain with Ubuntu
