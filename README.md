@@ -474,22 +474,25 @@ $ alias domain='docker exec -ti <container-name> /domain.sh'
 $ domain
 
 Usage:
-        domain info
-        domain ldapinfo
-        domain groups
-        domain group <group>
-        domain users
-        domain user <user>
-        domain create-group <group>
-        domain delete-group <group>
-        domain create-user <user>
-        domain delete-user <user>
-        domain change-password <user>
-        domain edit <user or group>
-        domain add-user-to-group <user> <group>
-        domain remove-user-from-group <user> <group>
-        domain update-ip <domain> <controller> <oldip> <newip>
-        domain flush-cache
+	domain info
+	domain ldapinfo
+	domain groups
+	domain group <group>
+	domain users
+	domain user <user>
+	domain create-group <group>
+	domain delete-group <group>
+	domain create-user <user>
+	domain delete-user <user>
+	domain change-password <user>
+	domain edit <user or group>
+	domain set-user-ssh-key <user> <pubkey>
+	domain add-user-to-group <user> <group>
+	domain remove-user-from-group <user> <group>
+	domain update-ip <domain> <controller> <oldip> <newip>
+	domain flush-cache
+	domain reload-config
+	domain db-check-and-fix
 ```
 
 ## Joining the domain with Ubuntu

@@ -14,6 +14,7 @@ appSetup () {
 	INSECURELDAP=${INSECURELDAP:-false}
 	DNSFORWARDER=${DNSFORWARDER:-NONE}
 	HOSTIP=${HOSTIP:-NONE}
+	DOMAIN_DC=${DOMAIN_DC:-${DOMAIN_DC}}
 	
 	LDOMAIN=${DOMAIN,,}
 	UDOMAIN=${DOMAIN^^}
@@ -124,7 +125,7 @@ appSetup () {
 fixDomainUsersGroup () {
 	GIDNUMBER=$(ldbedit -H /var/lib/samba/private/sam.ldb -e cat "samaccountname=domain users" | { grep ^gidNumber: || true; })
 	if [ -z "${GIDNUMBER}" ]; then
-		echo "dn: CN=Domain Users,CN=Users,DC=corp,DC=example,DC=com
+		echo "dn: CN=Domain Users,CN=Users,${DOMAIN_DC}
 changetype: modify
 add: gidNumber
 gidNumber: 3000000" | ldbmodify -H /var/lib/samba/private/sam.ldb
@@ -132,12 +133,48 @@ gidNumber: 3000000" | ldbmodify -H /var/lib/samba/private/sam.ldb
 	fi
 }
 
+setupSSH () {
+	echo "dn: CN=sshPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DC}
+changetype: add
+objectClass: top
+objectClass: attributeSchema
+attributeID: 1.3.6.1.4.1.24552.500.1.1.1.13
+cn: sshPublicKey
+name: sshPublicKey
+lDAPDisplayName: sshPublicKey
+description: MANDATORY: OpenSSH Public key
+attributeSyntax: 2.5.5.10
+oMSyntax: 4
+isSingleValued: FALSE
+objectCategory: CN=Attribute-Schema,CN=Schema,CN=Configuration,${DOMAIN_DC}
+searchFlags: 8
+schemaIDGUID:: cjDAZyEXzU+/akI0EGDW+g==" > /tmp/Sshpubkey.attr.ldif
+	echo "dn: CN=ldapPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DC}
+changetype: add
+objectClass: top
+objectClass: classSchema
+governsID: 1.3.6.1.4.1.24552.500.1.1.2.0
+cn: ldapPublicKey
+name: ldapPublicKey
+description: MANDATORY: OpenSSH LPK objectclass
+lDAPDisplayName: ldapPublicKey
+subClassOf: top
+objectClassCategory: 3
+objectCategory: CN=Class-Schema,CN=Schema,CN=Configuration,${DOMAIN_DC}
+defaultObjectCategory: CN=ldapPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DC}
+mayContain: sshPublicKey
+schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
+	ldbadd -H /var/lib/samba/private/sam.ldb /var/lib/samba/private/sam.ldb /tmp/Sshpubkey.attr.ldif --option="dsdb:schema update allowed"=true
+	ldbadd -H /var/lib/samba/private/sam.ldb /var/lib/samba/private/sam.ldb /tmp/Sshpubkey.class.ldif --option="dsdb:schema update allowed"=true
+}
+
 appStart () {
 	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
 	if [ "${1}" = "true" ]; then
-		echo "Sleeping 10 before checking on Domain Users of gid 3000000"
+		echo "Sleeping 10 before checking on Domain Users of gid 3000000 and setting up sshPublicKey"
 		sleep 10
 		fixDomainUsersGroup
+		setupSSH
 	fi
 	while [ ! -f /var/log/supervisor/supervisor.log ]; do
 		echo "Waiting for log files..."

@@ -25,6 +25,7 @@ Usage:
 	domain delete-user <user>
 	domain change-password <user>
 	domain edit <user or group>
+	domain set-user-ssh-key <user> <pubkey>
 	domain add-user-to-group <user> <group>
 	domain remove-user-from-group <user> <group>
 	domain update-ip <domain> <controller> <oldip> <newip>
@@ -118,6 +119,28 @@ case "${1}" in
 		;;
 	db-check-and-fix)
 		samba-tool dbcheck --cross-ncs --fix --yes
+		;;
+	set-user-ssh-key)
+		DN=$(ldbedit -H /var/lib/samba/private/sam.ldb -e cat "samaccountname=${2}" | grep ^dn: |sed 's/^dn: //g')
+		CURKEY=$(ldbedit -H /var/lib/samba/private/sam.ldb -e cat "samaccountname=${2}" | { grep ^sshPublicKey: || true; })
+		if [ -z "${CURKEY}" ]; then
+			MOD="dn: ${DN}
+changetype: modify
+add: objectClass
+objectClass: ldapPublicKey"
+			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
+			MOD="dn: ${DN}
+changetype: modify
+add: sshPublicKey
+sshPublicKey: ${3}"
+			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
+		else
+			MOD="dn: ${DN}
+changetype: modify
+replace: sshPublicKey
+sshPublicKey: ${3}"
+			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
+		fi
 		;;
 	*)
 		usage;
