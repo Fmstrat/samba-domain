@@ -29,6 +29,8 @@ Usage:
 	domain remove-user-from-group <user> <group>
 	domain update-ip <domain> <controller> <oldip> <newip>
 	domain flush-cache
+	domain reload-config
+	domain db-check-and-fix
 ';
 }
 
@@ -107,6 +109,15 @@ case "${1}" in
 		;;
 	flush-cache)
 		net cache flush
+		;;
+	reload-config)
+		if [ -f /etc/samba/external/smb.conf ]; then
+			cp -f /etc/samba/external/smb.conf /etc/samba/smb.conf
+		fi
+		net cache flush
+		;;
+	db-check-and-fix)
+		samba-tool dbcheck --cross-ncs --fix --yes
 		;;
 	*)
 		usage;
