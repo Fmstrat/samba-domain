@@ -21,6 +21,7 @@ RUN \
         inetutils-ping \
         ldb-tools \
         vim \
+        curl \
         ntp &&\
     apt-get clean autoclean &&\
     apt-get autoremove --yes &&\
