@@ -107,7 +107,7 @@ Keep in mind, for all examples replace `nowsci/samba-domain` with `samba-domain`
 
 Start a new domain, and forward non-resolvable queries to the main DNS server
 * Local site is `192.168.3.0`
-* Local DC (this one) hostname is `LOCALDC` using the host IP of `192.168.3.222`
+* Local DC (this one) hostname is `EXAMPLEDC` using the host IP of `192.168.3.222`
 * Local main DNS is running on `192.168.3.1`
 
 ```
@@ -141,8 +141,8 @@ docker run -t -i \
     --dns-search corp.example.com \
     --dns 192.168.3.222 \
     --dns 192.168.3.1 \
-    --add-host localdc.corp.example.com:192.168.3.222 \
-    -h localdc \
+    --add-host exampledc.corp.example.com:192.168.3.222 \
+    -h exampledc \
     --name samba \
     --privileged \
     nowsci/samba-domain
@@ -150,7 +150,7 @@ docker run -t -i \
 
 Join an existing domain, and forward non-resolvable queries to the main DNS server
 * Local site is `192.168.3.0`
-* Local DC (this one) hostname is `LOCALDC` using the host IP of `192.168.3.222`
+* Local DC (this one) hostname is `EXAMPLEDC` using the host IP of `192.168.3.222`
 * Local existing DC is running DNS and has IP of `192.168.3.201`
 * Local main DNS is running on `192.168.3.1`
 
@@ -187,8 +187,8 @@ docker run -t -i \
     --dns 192.168.3.222 \
     --dns 192.168.3.1 \
     --dns 192.168.3.201 \
-    --add-host localdc.corp.example.com:192.168.3.222 \
-    -h localdc \
+    --add-host exampledc.corp.example.com:192.168.3.222 \
+    -h exampledc \
     --name samba \
     --privileged \
     nowsci/samba-domain
@@ -196,7 +196,7 @@ docker run -t -i \
 
 Join an existing domain, forward DNS, remove security features, and connect to a remote site via openvpn
 * Local site is `192.168.3.0`
-* Local DC (this one) hostname is `LOCALDC` using the host IP of `192.168.3.222`
+* Local DC (this one) hostname is `EXAMPLEDC` using the host IP of `192.168.3.222`
 * Local existing DC is running DNS and has IP of `192.168.3.201`
 * Local main DNS is running on `192.168.3.1`
 * Remote site is `192.168.6.0`
@@ -241,10 +241,10 @@ docker run -t -i \
     --dns 192.168.3.1 \
     --dns 192.168.6.222 \
     --dns 192.168.3.201 \
-    --add-host localdc.corp.example.com:192.168.3.222 \
+    --add-host exampledc.corp.example.com:192.168.3.222 \
     --add-host remotedc.corp.example.com:192.168.6.222 \
     --add-host remotedc:192.168.6.222 \
-    -h localdc \
+    -h exampledc \
     --name samba \
     --privileged \
     --cap-add=NET_ADMIN \
@@ -261,7 +261,7 @@ Keep in mind for all examples `DOMAINPASS` can be removed after the first run.
 
 Start a new domain, and forward non-resolvable queries to the main DNS server
 * Local site is `192.168.3.0`
-* Local DC (this one) hostname is `LOCALDC` using the host IP of `192.168.3.222`
+* Local DC (this one) hostname is `EXAMPLEDC` using the host IP of `192.168.3.222`
 * Local main DNS is running on `192.168.3.1`
 
 ```
@@ -309,8 +309,8 @@ services:
       - 192.168.3.222
       - 192.168.3.1
     extra_hosts:
-      - localdc.corp.example.com:192.168.3.222
-    hostname: localdc
+      - exampledc.corp.example.com:192.168.3.222
+    hostname: exampledc
     cap_add:
       - NET_ADMIN
       - SYS_NICE
@@ -325,7 +325,7 @@ services:
 
 Join an existing domain, and forward non-resolvable queries to the main DNS server
 * Local site is `192.168.3.0`
-* Local DC (this one) hostname is `LOCALDC` using the host IP of `192.168.3.222`
+* Local DC (this one) hostname is `EXAMPLEDC` using the host IP of `192.168.3.222`
 * Local existing DC is running DNS and has IP of `192.168.3.201`
 * Local main DNS is running on `192.168.3.1`
 
@@ -376,8 +376,8 @@ services:
       - 192.168.3.1
       - 192.168.3.201
     extra_hosts:
-      - localdc.corp.example.com:192.168.3.222
-    hostname: localdc
+      - exampledc.corp.example.com:192.168.3.222
+    hostname: exampledc
     cap_add:
       - NET_ADMIN
       - SYS_NICE
@@ -392,7 +392,7 @@ services:
 
 Join an existing domain, forward DNS, remove security features, and connect to a remote site via openvpn
 * Local site is `192.168.3.0`
-* Local DC (this one) hostname is `LOCALDC` using the host IP of `192.168.3.222`
+* Local DC (this one) hostname is `EXAMPLEDC` using the host IP of `192.168.3.222`
 * Local existing DC is running DNS and has IP of `192.168.3.201`
 * Local main DNS is running on `192.168.3.1`
 * Remote site is `192.168.6.0`
@@ -451,10 +451,10 @@ services:
       - 192.168.6.222
       - 192.168.3.201
     extra_hosts:
-      - localdc.corp.example.com:192.168.3.222
+      - exampledc.corp.example.com:192.168.3.222
       - remotedc.corp.example.com:192.168.6.222
       - remotedc:192.168.6.222
-    hostname: localdc
+    hostname: exampledc
     cap_add:
       - NET_ADMIN
       - SYS_NICE
