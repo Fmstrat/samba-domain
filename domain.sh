@@ -26,6 +26,7 @@ Usage:
 	domain change-password <user>
 	domain edit <user or group>
 	domain set-user-ssh-key <user> <pubkey>
+	domain set-user-photo <user> <"$(base64 -w0 /path/to/img)>">
 	domain add-user-to-group <user> <group>
 	domain remove-user-from-group <user> <group>
 	domain update-ip <domain> <controller> <oldip> <newip>
@@ -139,6 +140,23 @@ sshPublicKey: ${3}"
 changetype: modify
 replace: sshPublicKey
 sshPublicKey: ${3}"
+			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
+		fi
+		;;
+	set-user-photo)
+		DN=$(ldbedit -H /var/lib/samba/private/sam.ldb -e cat "samaccountname=${2}" | grep ^dn: |sed 's/^dn: //g')
+		CURPHOTO=$(ldbedit -H /var/lib/samba/private/sam.ldb -e cat "samaccountname=${2}" | { grep ^jpegPhoto: || true; })
+		if [ -z "${CURPHOTO}" ]; then
+			MOD="dn: ${DN}
+changetype: modify
+add: jpegPhoto
+jpegPhoto: ${3}"
+			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
+		else
+			MOD="dn: ${DN}
+changetype: modify
+replace: jpegPhoto
+jpegPhoto: ${3}"
 			echo "${MOD}" | ldbmodify -H /var/lib/samba/private/sam.ldb
 		fi
 		;;
