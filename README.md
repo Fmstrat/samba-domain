@@ -115,7 +115,7 @@ docker run -t -i \
     -e "DOMAIN=CORP.EXAMPLE.COM" \
     -e "DOMAIN_DC=dc=corp,dc=example,dc=com" \
     -e "DOMAIN_EMAIL=example.com" \
-    -e "DOMAINPASS=ThisIsMyAdminPassword" \
+    -e "DOMAINPASS=ThisIsMyAdminPassword^123" \
     -e "DNSFORWARDER=192.168.3.1" \
     -e "HOSTIP=192.168.3.222" \
     -p 192.168.3.222:53:53 \
@@ -159,7 +159,7 @@ docker run -t -i \
     -e "DOMAIN=CORP.EXAMPLE.COM" \
     -e "DOMAIN_DC=dc=corp,dc=example,dc=com" \
     -e "DOMAIN_EMAIL=example.com" \
-    -e "DOMAINPASS=ThisIsMyAdminPassword" \
+    -e "DOMAINPASS=ThisIsMyAdminPassword^123" \
     -e "JOIN=true" \
     -e "DNSFORWARDER=192.168.3.1" \
     -e "HOSTIP=192.168.3.222" \
@@ -207,7 +207,7 @@ docker run -t -i \
     -e "DOMAIN=CORP.EXAMPLE.COM" \
     -e "DOMAIN_DC=dc=corp,dc=example,dc=com" \
     -e "DOMAIN_EMAIL=example.com" \
-    -e "DOMAINPASS=ThisIsMyAdminPassword" \
+    -e "DOMAINPASS=ThisIsMyAdminPassword^123" \
     -e "JOIN=true" \
     -e "DNSFORWARDER=192.168.3.1" \
     -e "MULTISITE=true" \
@@ -286,7 +286,7 @@ services:
       - DOMAIN=CORP.EXAMPLE.COM
       - DOMAIN_DC=dc=corp,dc=example,dc=com
       - DOMAIN_EMAIL=example.com
-      - DOMAINPASS=ThisIsMyAdminPassword
+      - DOMAINPASS=ThisIsMyAdminPassword^123
       - DNSFORWARDER=192.168.3.1
       - HOSTIP=192.168.3.222
     networks:
@@ -357,7 +357,7 @@ services:
       - DOMAIN=CORP.EXAMPLE.COM
       - DOMAIN_DC=dc=corp,dc=example,dc=com
       - DOMAIN_EMAIL=example.com
-      - DOMAINPASS=ThisIsMyAdminPassword
+      - DOMAINPASS=ThisIsMyAdminPassword^123
       - JOIN=true
       - DNSFORWARDER=192.168.3.1
       - HOSTIP=192.168.3.222
@@ -434,7 +434,7 @@ services:
       - DOMAIN=CORP.EXAMPLE.COM
       - DOMAIN_DC=dc=corp,dc=example,dc=com
       - DOMAIN_EMAIL=example.com
-      - DOMAINPASS=ThisIsMyAdminPassword
+      - DOMAINPASS=ThisIsMyAdminPassword^123
       - JOIN=true
       - DNSFORWARDER=192.168.3.1
       - MULTISITE=true
