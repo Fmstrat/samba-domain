@@ -27,12 +27,12 @@ appSetup () {
 		sleep 30
 	fi
 
-        # Set host ip option
-        if [[ "$HOSTIP" != "NONE" ]]; then
+	# Set host ip option
+	if [[ "$HOSTIP" != "NONE" ]]; then
 		HOSTIP_OPTION="--host-ip=$HOSTIP"
-        else
+	else
 		HOSTIP_OPTION=""
-        fi
+	fi
 
 	# Set up samba
 	mv /etc/krb5.conf /etc/krb5.conf.orig
@@ -41,7 +41,9 @@ appSetup () {
 	echo "    dns_lookup_kdc = true" >> /etc/krb5.conf
 	echo "    default_realm = ${UDOMAIN}" >> /etc/krb5.conf
 	# If the finished file isn't there, this is brand new, we're not just moving to a new container
+	FIRSTRUN=false
 	if [[ ! -f /etc/samba/external/smb.conf ]]; then
+		FIRSTRUN=true
 		mv /etc/samba/smb.conf /etc/samba/smb.conf.orig
 		if [[ ${JOIN,,} == "true" ]]; then
 			if [[ ${JOINSITE} == "NONE" ]]; then
@@ -116,7 +118,7 @@ appSetup () {
 	echo "restrict 2.pool.ntp.org   mask 255.255.255.255    nomodify notrap nopeer noquery" >> /etc/ntpd.conf
 	echo "tinker panic 0" >> /etc/ntpd.conf
 
-	appStart check
+	appStart ${FIRSTRUN}
 }
 
 fixDomainUsersGroup () {
@@ -132,7 +134,7 @@ gidNumber: 3000000" | ldbmodify -H /var/lib/samba/private/sam.ldb
 
 appStart () {
 	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
-	if [ "${1}" = "check" ]; then
+	if [ "${1}" = "true" ]; then
 		echo "Sleeping 10 before checking on Domain Users of gid 3000000"
 		sleep 10
 		fixDomainUsersGroup
@@ -145,23 +147,6 @@ appStart () {
 	tail -F /var/log/supervisor/*.log
 }
 
-case "$1" in
-	start)
-		if [[ -f /etc/samba/external/smb.conf ]]; then
-			cp -f /etc/samba/external/smb.conf /etc/samba/smb.conf
-			appStart
-		else
-			echo "Config file is missing."
-		fi
-		;;
-	setup)
-		# If the supervisor conf isn't there, we're spinning up a new container
-		if [[ -f /etc/supervisor/conf.d/supervisord.conf ]]; then
-			appStart
-		else
-			appSetup
-		fi
-		;;
-esac
+appSetup
 
 exit 0
