@@ -62,10 +62,12 @@ appSetup () {
 			\\\tidmap_ldb:use rfc2307 = yes\\n\
 			wins support = yes\\n\
 			template shell = /bin/bash\\n\
-			winbind nss info = rfc2307\\n\
-			idmap config ${URDOMAIN}: range = 10000-20000\\n\
-			idmap config ${URDOMAIN}: backend = ad\
+			template homedir = /home/%U\\n\
+			idmap config ${URDOMAIN} : schema_mode = rfc2307\\n\
+			idmap config ${URDOMAIN} : unix_nss_info = yes\\n\
+			idmap config ${URDOMAIN} : backend = ad\
 			" /etc/samba/smb.conf
+		sed -i "s/LOCALDC/${URDOMAIN}DC/g" /etc/samba/smb.conf
 		if [[ $DNSFORWARDER != "NONE" ]]; then
 			sed -i "/\[global\]/a \
 				\\\tdns forwarder = ${DNSFORWARDER}\
@@ -114,11 +116,33 @@ appSetup () {
 	echo "restrict 2.pool.ntp.org   mask 255.255.255.255    nomodify notrap nopeer noquery" >> /etc/ntpd.conf
 	echo "tinker panic 0" >> /etc/ntpd.conf
 
-	appStart
+	appStart check
+}
+
+fixDomainUsersGroup () {
+	GIDNUMBER=$(ldbedit -H /var/lib/samba/private/sam.ldb -e cat "samaccountname=domain users" | { grep ^gidNumber: || true; })
+	if [ -z "${GIDNUMBER}" ]; then
+		echo "dn: CN=Domain Users,CN=Users,DC=corp,DC=example,DC=com
+changetype: modify
+add: gidNumber
+gidNumber: 3000000" | ldbmodify -H /var/lib/samba/private/sam.ldb
+		net cache flush
+	fi
 }
 
 appStart () {
-	/usr/bin/supervisord
+	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
+	if [ "${1}" = "check" ]; then
+		echo "Sleeping 10 before checking on Domain Users of gid 3000000"
+		sleep 10
+		fixDomainUsersGroup
+	fi
+	while [ ! -f /var/log/supervisor/supervisor.log ]; do
+		echo "Waiting for log files..."
+		sleep 1
+	done
+	sleep 3
+	tail -F /var/log/supervisor/*.log
 }
 
 case "$1" in

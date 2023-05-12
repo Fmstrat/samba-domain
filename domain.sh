@@ -48,11 +48,11 @@ case "${1}" in
 		echo ""
 		echo "Info"
 		echo "----"
-		wbinfo --group-info ${2}
+		wbinfo --group-info "${2}"
 		echo ""
 		echo "Members"
 		echo "-------"
-		samba-tool group listmembers ${2}
+		samba-tool group listmembers "${2}"
 		echo ""
 		;;
 	users)
@@ -63,21 +63,21 @@ case "${1}" in
 		echo ""
 		echo "User:"
 		echo "-----"
-		wbinfo -i ${2}
+		wbinfo -i "${2}"
 		echo ""
 		echo "Groups:"
 		echo "-----"
-		GL=$(wbinfo -r ${2} | sed 's/\r//g')
+		GL=$(wbinfo -r "${2}" | sed 's/\r//g')
 		for G in ${GL}; do
-			wbinfo --gid-info ${G}
+			wbinfo --gid-info "${G}"
 		done
 		echo ""
 		;;
 	create-group)
-		samba-tool group add ${2}
+		samba-tool group add "${2}"
 		;;
 	delete-group)
-		samba-tool group delete ${2}
+		samba-tool group delete "${2}"
 		;;
 	create-user)
 		echo -n "Firstname: "
@@ -85,14 +85,14 @@ case "${1}" in
 		echo -n "Lastname: "
 		read L
 		E="${2}@${DOMAIN_EMAIL}"
-		samba-tool user create ${2} --surname ${L} --given-name ${F} --mail-address ${E}
-		samba-tool user setexpiry ${2} --noexpiry
+		samba-tool user create "${2}" --surname "${L}" --given-name "${F}" --mail-address "${E}"
+		samba-tool user setexpiry "${2}" --noexpiry
 		;;
 	delete-user)
-		samba-tool user delete ${2}
+		samba-tool user delete "${2}"
 		;;
 	change-password)
-		samba-tool user setpassword ${2}
+		samba-tool user setpassword "${2}"
 		;;
 	add-user-to-group)
 		samba-tool group addmembers "${3}" "${2}"
