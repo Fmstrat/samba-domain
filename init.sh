@@ -90,23 +90,28 @@ appSetup () {
 	fi
 
 	# Set up supervisor
+	addSupProg() {
+		echo "" >> ${SUP_CONF}
+		echo "[program:$1]" >> ${SUP_CONF}
+		echo "command = $2" >> ${SUP_CONF}
+		echo "redirect_stderr = true" >> ${SUP_CONF}
+		echo "stdout_logfile = /dev/stdout" >> ${SUP_CONF}
+		echo "stdout_logfile_maxbytes = 0" >> ${SUP_CONF}
+	}
 	echo "[supervisord]" > ${SUP_CONF}
-	echo "nodaemon=true" >> ${SUP_CONF}
-	echo "user=root" >> ${SUP_CONF}
-	echo "pidfile=/var/run/supervisord.pid" >> ${SUP_CONF}
-	echo "" >> ${SUP_CONF}
-	echo "[program:ntpd]" >> ${SUP_CONF}
-	echo "command=/usr/sbin/ntpd -c /etc/ntpd.conf -n" >> ${SUP_CONF}
-	echo "" >> ${SUP_CONF}
-	echo "[program:samba]" >> ${SUP_CONF}
-	echo "command=/usr/sbin/samba -i" >> ${SUP_CONF}
+	echo "nodaemon = true" >> ${SUP_CONF}
+	echo "user = root" >> ${SUP_CONF}
+	echo "pidfile = /var/run/supervisord.pid" >> ${SUP_CONF}
+	echo "logfile = /dev/stdout" >> ${SUP_CONF}
+	echo "logfile_maxbytes = 0" >> ${SUP_CONF}
+	echo "loglevel = info" >> ${SUP_CONF}
+	addSupProg "ntpd" "/usr/sbin/ntpd -c /etc/ntpd.conf -n"
+	addSupProg "samba" "/usr/sbin/samba -i"
 	if [[ ${MULTISITE,,} == "true" ]]; then
 		if [[ -n $VPNPID ]]; then
 			kill $VPNPID
 		fi
-		echo "" >> ${SUP_CONF}
-		echo "[program:openvpn]" >> ${SUP_CONF}
-		echo "command=/usr/sbin/openvpn --config /docker.ovpn" >> ${SUP_CONF}
+		addSupProg "openvpn" "/usr/sbin/openvpn --config /docker.ovpn"
 	fi
 
 	echo "server 127.127.1.0" > /etc/ntpd.conf
