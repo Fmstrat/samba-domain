@@ -25,6 +25,8 @@ RUN \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ &&\
     rm -fr /tmp/* /var/tmp/*
 
+VOLUME [ "/var/lib/samba", "/etc/samba/external" ]
+
 ADD init.sh /init.sh
 ADD domain.sh /domain.sh
 RUN chmod 755 /init.sh /domain.sh
