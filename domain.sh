@@ -101,10 +101,10 @@ case "${1}" in
 		samba-tool user setpassword "${2}"
 		;;
 	add-user-to-group)
-		samba-tool group addmembers "${3}" "${2}"
+		samba-tool group addmembers "${3}" "${2}" --object-types=user
 		;;
 	remove-user-from-group)
-		samba-tool group removemembers "${3}" "${2}"
+		samba-tool group removemembers "${3}" "${2}" --object-types=user
 		;;
 	update-ip)
 		samba-tool dns update 127.0.0.1 ${2} ${3} A ${4} ${5} -U administrator
