@@ -30,4 +30,4 @@ VOLUME [ "/var/lib/samba", "/etc/samba/external" ]
 ADD init.sh /init.sh
 ADD domain.sh /domain.sh
 RUN chmod 755 /init.sh /domain.sh
-CMD /init.sh setup
+CMD [ "/init.sh" ]

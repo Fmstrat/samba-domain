@@ -2,6 +2,8 @@
 
 set -e
 
+SUP_CONF="/etc/supervisor/supervisord.conf"
+
 appSetup () {
 
 	# Set variables
@@ -14,7 +16,8 @@ appSetup () {
 	INSECURELDAP=${INSECURELDAP:-false}
 	DNSFORWARDER=${DNSFORWARDER:-NONE}
 	HOSTIP=${HOSTIP:-NONE}
-	DOMAIN_DC=${DOMAIN_DC:-${DOMAIN_DC}}
+	DOMAIN_DC=${DOMAIN_DC:-"dc=${DOMAIN//./,dc=}"}
+	LOGLEVEL=${LOGLEVEL:-DEFAULT}
 	
 	LDOMAIN=${DOMAIN,,}
 	UDOMAIN=${DOMAIN^^}
@@ -33,6 +36,13 @@ appSetup () {
 		HOSTIP_OPTION="--host-ip=$HOSTIP"
 	else
 		HOSTIP_OPTION=""
+	fi
+
+	# Set log level override option
+	if [[ "$LOGLEVEL" != "DEFAULT" && $LOGLEVEL =~ ^[0-9]+$ ]]; then
+		LOGLEVEL="--debuglevel=${LOGLEVEL}"
+	else
+		LOGLEVEL=""
 	fi
 
 	# Set up samba
@@ -86,22 +96,30 @@ appSetup () {
 	else
 		cp -f /etc/samba/external/smb.conf /etc/samba/smb.conf
 	fi
-        
+
 	# Set up supervisor
-	echo "[supervisord]" > /etc/supervisor/conf.d/supervisord.conf
-	echo "nodaemon=true" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "[program:ntpd]" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "command=/usr/sbin/ntpd -c /etc/ntpd.conf -n" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "[program:samba]" >> /etc/supervisor/conf.d/supervisord.conf
-	echo "command=/usr/sbin/samba -i" >> /etc/supervisor/conf.d/supervisord.conf
+	addSupProg() {
+		echo "" >> ${SUP_CONF}
+		echo "[program:$1]" >> ${SUP_CONF}
+		echo "command = $2" >> ${SUP_CONF}
+		echo "redirect_stderr = true" >> ${SUP_CONF}
+		echo "stdout_logfile = /dev/stdout" >> ${SUP_CONF}
+		echo "stdout_logfile_maxbytes = 0" >> ${SUP_CONF}
+	}
+	echo "[supervisord]" > ${SUP_CONF}
+	echo "nodaemon = true" >> ${SUP_CONF}
+	echo "user = root" >> ${SUP_CONF}
+	echo "pidfile = /var/run/supervisord.pid" >> ${SUP_CONF}
+	echo "logfile = /dev/stdout" >> ${SUP_CONF}
+	echo "logfile_maxbytes = 0" >> ${SUP_CONF}
+	echo "loglevel = info" >> ${SUP_CONF}
+	addSupProg "ntpd" "/usr/sbin/ntpd -c /etc/ntpd.conf -n"
+	addSupProg "samba" "/usr/sbin/samba --interactive --debug-stdout ${LOGLEVEL}"
 	if [[ ${MULTISITE,,} == "true" ]]; then
 		if [[ -n $VPNPID ]]; then
 			kill $VPNPID
 		fi
-		echo "" >> /etc/supervisor/conf.d/supervisord.conf
-		echo "[program:openvpn]" >> /etc/supervisor/conf.d/supervisord.conf
-		echo "command=/usr/sbin/openvpn --config /docker.ovpn" >> /etc/supervisor/conf.d/supervisord.conf
+		addSupProg "openvpn" "/usr/sbin/openvpn --config /docker.ovpn"
 	fi
 
 	echo "server 127.127.1.0" > /etc/ntpd.conf
@@ -168,22 +186,30 @@ schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
 	ldbadd -H /var/lib/samba/private/sam.ldb /var/lib/samba/private/sam.ldb /tmp/Sshpubkey.class.ldif --option="dsdb:schema update allowed"=true
 }
 
-appStart () {
-	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
-	if [ "${1}" = "true" ]; then
-		echo "Sleeping 10 before checking on Domain Users of gid 3000000 and setting up sshPublicKey"
-		sleep 10
-		fixDomainUsersGroup
-		setupSSH
-	fi
-	while [ ! -f /var/log/supervisor/supervisor.log ]; do
-		echo "Waiting for log files..."
-		sleep 1
-	done
-	sleep 3
-	tail -F /var/log/supervisor/*.log
+appPostSetup () {
+	echo "Checking on Domain Users of gid 3000000 and setting up sshPublicKey"
+	fixDomainUsersGroup
+	setupSSH
 }
 
-appSetup
+appStart () {
+	if [[ "${1}" == "true" ]]; then
+		( sleep 15 ; appPostSetup ) &
+	fi
+	exec /usr/bin/supervisord -c ${SUP_CONF}
+}
 
-exit 0
+appStop () {
+	PIDS=$(jobs -p)
+	echo "" ; echo "Stopping ($PIDS)..." ; echo ""
+	[[ -n ${PIDS} ]] && kill ${PIDS}
+}
+
+# Listen for stop signals
+trap appStop TERM INT
+
+# Setup & start
+appSetup &
+
+# Waiting on procs
+wait

@@ -12,6 +12,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 * `INSECURELDAP` defaults to `false`. When set to true, it removes the secure LDAP requirement. While this is not recommended for production it is required for some LDAP tools. You can remove it later from the smb.conf file stored in the config directory.
 * `MULTISITE` defaults to `false` and tells the container to connect to an OpenVPN site via an ovpn file with no password. For instance, if you have two locations where you run your domain controllers, they need to be able to interact. The VPN allows them to do that.
 * `NOCOMPLEXITY` defaults to `false`. When set to `true` it removes password complexity requirements including `complexity, history-length, min-pwd-age, max-pwd-age`
+* `LOGLEVEL` can be set to a numeric value (1-10) to override the log level configuration in smb.conf.
 
 ## Volumes for quick start
 * `/etc/localtime:/etc/localtime:ro` - Sets the timezone to match the host
