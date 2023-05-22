@@ -14,6 +14,7 @@ appSetup () {
 	INSECURELDAP=${INSECURELDAP:-false}
 	DNSFORWARDER=${DNSFORWARDER:-NONE}
 	HOSTIP=${HOSTIP:-NONE}
+	RPCPORTS=${RPCPORTS:-"49152-49172"}
 	DOMAIN_DC=${DOMAIN_DC:-${DOMAIN_DC}}
 	
 	LDOMAIN=${DOMAIN,,}
@@ -68,7 +69,8 @@ appSetup () {
 			template homedir = /home/%U\\n\
 			idmap config ${URDOMAIN} : schema_mode = rfc2307\\n\
 			idmap config ${URDOMAIN} : unix_nss_info = yes\\n\
-			idmap config ${URDOMAIN} : backend = ad\
+			idmap config ${URDOMAIN} : backend = ad\\n\
+			rpc server dynamic port range = ${RPCPORTS}\
 			" /etc/samba/smb.conf
 		sed -i "s/LOCALDC/${URDOMAIN}DC/g" /etc/samba/smb.conf
 		if [[ $DNSFORWARDER != "NONE" ]]; then
