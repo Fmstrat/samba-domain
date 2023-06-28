@@ -22,6 +22,7 @@ RUN \
         ldb-tools \
         vim \
         curl \
+        dnsutils \
         ntp &&\
     apt-get clean autoclean &&\
     apt-get autoremove --yes &&\
