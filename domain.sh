@@ -39,7 +39,7 @@ Usage:
 
 case "${1}" in
 	info)
-		wbinfo -D CORP
+		wbinfo -D "$(wbinfo --own-domain)"
 		;;
 	ldapinfo)
 		ldapsearch -b "${DOMAIN_DC}"
