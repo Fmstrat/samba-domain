@@ -19,7 +19,7 @@ appSetup () {
 	
 	LDOMAIN=${DOMAIN,,}
 	UDOMAIN=${DOMAIN^^}
-	URDOMAIN=${UDOMAIN%%.*}
+	URDOMAIN=${WORKGROUP:-${UDOMAIN%%.*}}
 
 	# If multi-site, we need to connect to the VPN before joining the domain
 	if [[ ${MULTISITE,,} == "true" ]]; then
