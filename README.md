@@ -4,7 +4,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 
 ## Environment variables for quick start
 * `DOMAIN` defaults to `CORP.EXAMPLE.COM` and should be set to your domain
-* `WORKGROUP` defaults to `CORP` from `CORP.EXAMPLE.COM` but can be customised
+* `WORKGROUP` defaults to `CORP` from `CORP.EXAMPLE.COM` but can be customized
 * `DOMAINPASS` should be set to your administrator password, be it existing or new. This can be removed from the environment after the first setup run.
 * `HOSTIP` can be set to the IP you want to advertise.
 * `JOIN` defaults to `false` and means the container will provision a new domain. Set this to `true` to join an existing domain.
