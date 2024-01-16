@@ -164,8 +164,8 @@ objectCategory: CN=Class-Schema,CN=Schema,CN=Configuration,${DOMAIN_DC}
 defaultObjectCategory: CN=ldapPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DC}
 mayContain: sshPublicKey
 schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
-	ldbadd -H /var/lib/samba/private/sam.ldb /var/lib/samba/private/sam.ldb /tmp/Sshpubkey.attr.ldif --option="dsdb:schema update allowed"=true
-	ldbadd -H /var/lib/samba/private/sam.ldb /var/lib/samba/private/sam.ldb /tmp/Sshpubkey.class.ldif --option="dsdb:schema update allowed"=true
+	ldbadd -H /var/lib/samba/private/sam.ldb --option="dsdb:schema update allowed"=true /tmp/Sshpubkey.attr.ldif
+	ldbadd -H /var/lib/samba/private/sam.ldb --option="dsdb:schema update allowed"=true /tmp/Sshpubkey.class.ldif
 }
 
 appStart () {
