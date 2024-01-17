@@ -14,8 +14,7 @@ appSetup () {
 	INSECURELDAP=${INSECURELDAP:-false}
 	DNSFORWARDER=${DNSFORWARDER:-NONE}
 	HOSTIP=${HOSTIP:-NONE}
-	DOMAIN_DC=${DOMAIN_DC:-${DOMAIN_DC}}
-	
+	DOMAIN_DN=${DOMAIN_DN:-${DOMAIN_DC:-DC=$(echo $DOMAIN | sed -e 's/\./,DC=/g')}}
 	LDOMAIN=${DOMAIN,,}
 	UDOMAIN=${DOMAIN^^}
 	URDOMAIN=${UDOMAIN%%.*}
@@ -125,7 +124,7 @@ appSetup () {
 fixDomainUsersGroup () {
 	GIDNUMBER=$(ldbedit -H /var/lib/samba/private/sam.ldb -e cat "samaccountname=domain users" | { grep ^gidNumber: || true; })
 	if [ -z "${GIDNUMBER}" ]; then
-		echo "dn: CN=Domain Users,CN=Users,${DOMAIN_DC}
+		echo "dn: CN=Domain Users,CN=Users,${DOMAIN_DN}
 changetype: modify
 add: gidNumber
 gidNumber: 3000000" | ldbmodify -H /var/lib/samba/private/sam.ldb
@@ -134,7 +133,7 @@ gidNumber: 3000000" | ldbmodify -H /var/lib/samba/private/sam.ldb
 }
 
 setupSSH () {
-	echo "dn: CN=sshPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DC}
+	echo "dn: CN=sshPublicKey,CN=Schema,CN=C˚onfiguration,${DOMAIN_DN}
 changetype: add
 objectClass: top
 objectClass: attributeSchema
@@ -146,10 +145,10 @@ description: MANDATORY: OpenSSH Public key
 attributeSyntax: 2.5.5.10
 oMSyntax: 4
 isSingleValued: FALSE
-objectCategory: CN=Attribute-Schema,CN=Schema,CN=Configuration,${DOMAIN_DC}
+objectCategory: CN=Attribute-Schema,CN=Schema,CN=Configuration,${DOMAIN_DN}
 searchFlags: 8
 schemaIDGUID:: cjDAZyEXzU+/akI0EGDW+g==" > /tmp/Sshpubkey.attr.ldif
-	echo "dn: CN=ldapPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DC}
+	echo "dn: CN=ldapPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DN}
 changetype: add
 objectClass: top
 objectClass: classSchema
@@ -160,8 +159,8 @@ description: MANDATORY: OpenSSH LPK objectclass
 lDAPDisplayName: ldapPublicKey
 subClassOf: top
 objectClassCategory: 3
-objectCategory: CN=Class-Schema,CN=Schema,CN=Configuration,${DOMAIN_DC}
-defaultObjectCategory: CN=ldapPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DC}
+objectCategory: CN=Class-Schema,CN=Schema,CN=Configuration,${DOMAIN_DN}
+defaultObjectCategory: CN=ldapPublicKey,CN=Schema,CN=Configuration,${DOMAIN_DN}
 mayContain: sshPublicKey
 schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
 	ldbadd -H /var/lib/samba/private/sam.ldb /var/lib/samba/private/sam.ldb /tmp/Sshpubkey.attr.ldif --option="dsdb:schema update allowed"=true

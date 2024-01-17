@@ -4,6 +4,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 
 ## Environment variables for quick start
 * `DOMAIN` defaults to `CORP.EXAMPLE.COM` and should be set to your domain
+* `DOMAIN_DN` is the LDAP path form of your `DOMAIN` (e.g. `DC=CORP,DC=EXAMPLE,DC=COM`) and by default will be computed from the provided `DOMAIN` value.
 * `DOMAINPASS` should be set to your administrator password, be it existing or new. This can be removed from the environment after the first setup run.
 * `HOSTIP` can be set to the IP you want to advertise.
 * `JOIN` defaults to `false` and means the container will provision a new domain. Set this to `true` to join an existing domain.
@@ -113,7 +114,7 @@ Start a new domain, and forward non-resolvable queries to the main DNS server
 ```
 docker run -t -i \
     -e "DOMAIN=CORP.EXAMPLE.COM" \
-    -e "DOMAIN_DC=dc=corp,dc=example,dc=com" \
+    -e "DOMAIN_DN=dc=corp,dc=example,dc=com" \
     -e "DOMAIN_EMAIL=example.com" \
     -e "DOMAINPASS=ThisIsMyAdminPassword^123" \
     -e "DNSFORWARDER=192.168.3.1" \
@@ -157,7 +158,7 @@ Join an existing domain, and forward non-resolvable queries to the main DNS serv
 ```
 docker run -t -i \
     -e "DOMAIN=CORP.EXAMPLE.COM" \
-    -e "DOMAIN_DC=dc=corp,dc=example,dc=com" \
+    -e "DOMAIN_DN=dc=corp,dc=example,dc=com" \
     -e "DOMAIN_EMAIL=example.com" \
     -e "DOMAINPASS=ThisIsMyAdminPassword^123" \
     -e "JOIN=true" \
@@ -205,7 +206,7 @@ Join an existing domain, forward DNS, remove security features, and connect to a
 ```
 docker run -t -i \
     -e "DOMAIN=CORP.EXAMPLE.COM" \
-    -e "DOMAIN_DC=dc=corp,dc=example,dc=com" \
+    -e "DOMAIN_DN=dc=corp,dc=example,dc=com" \
     -e "DOMAIN_EMAIL=example.com" \
     -e "DOMAINPASS=ThisIsMyAdminPassword^123" \
     -e "JOIN=true" \
@@ -280,7 +281,7 @@ services:
       - /data/docker/containers/samba/config/samba:/etc/samba/external
     environment:
       - DOMAIN=CORP.EXAMPLE.COM
-      - DOMAIN_DC=dc=corp,dc=example,dc=com
+      - DOMAIN_DN=dc=corp,dc=example,dc=com
       - DOMAIN_EMAIL=example.com
       - DOMAINPASS=ThisIsMyAdminPassword^123
       - DNSFORWARDER=192.168.3.1
@@ -345,7 +346,7 @@ services:
       - /data/docker/containers/samba/config/samba:/etc/samba/external
     environment:
       - DOMAIN=CORP.EXAMPLE.COM
-      - DOMAIN_DC=dc=corp,dc=example,dc=com
+      - DOMAIN_DN=dc=corp,dc=example,dc=com
       - DOMAIN_EMAIL=example.com
       - DOMAINPASS=ThisIsMyAdminPassword^123
       - JOIN=true
@@ -416,7 +417,7 @@ services:
       - /data/docker/containers/samba/config/openvpn/credentials:/credentials
     environment:
       - DOMAIN=CORP.EXAMPLE.COM
-      - DOMAIN_DC=dc=corp,dc=example,dc=com
+      - DOMAIN_DN=dc=corp,dc=example,dc=com
       - DOMAIN_EMAIL=example.com
       - DOMAINPASS=ThisIsMyAdminPassword^123
       - JOIN=true
