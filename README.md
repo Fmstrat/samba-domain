@@ -6,6 +6,7 @@ A well documented, tried and tested Samba Active Directory Domain Controller tha
 * `DOMAIN` defaults to `CORP.EXAMPLE.COM` and should be set to your domain
 * `DOMAINPASS` should be set to your administrator password, be it existing or new. This can be removed from the environment after the first setup run.
 * `HOSTIP` can be set to the IP you want to advertise.
+* `BINDINTERFACES` Specify specific addresses or interfaces that Samba will bind to, in the case that the container has multiple networks attached. The default is `${HOSTIP} lo` and usually will not need to be changed (always include `lo`!). Besides affecting the port listening behavior, this can affect what IPs Samba will register for itself in DNS. Explicitly specify `false` to omit any interface configuration directives (Samba will use all available interfaces). See Samba documentation on `interfaces` directive in smb.conf. 
 * `JOIN` defaults to `false` and means the container will provision a new domain. Set this to `true` to join an existing domain.
 * `JOINSITE` is optional and can be set to a site name when joining a domain, otherwise the default site will be used.
 * `DNSFORWARDER` is optional and if an IP such as `192.168.0.1` is supplied will forward all DNS requests samba can't resolve to that DNS server
