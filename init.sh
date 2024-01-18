@@ -10,8 +10,11 @@ appSetup () {
 	JOIN=${JOIN:-false}
 	JOINSITE=${JOINSITE:-NONE}
 	MULTISITE=${MULTISITE:-false}
+	IDLOWER=${IDLOWER:-3000000}
+	IDUPPER=${IDUPPER:-4000000}
 	NOCOMPLEXITY=${NOCOMPLEXITY:-false}
 	INSECURELDAP=${INSECURELDAP:-false}
+	ACLSTORAGE=${ACLSTORAGE:-DEFAULT}
 	DNSFORWARDER=${DNSFORWARDER:-NONE}
 	HOSTIP=${HOSTIP:-NONE}
 	DOMAIN_DC=${DOMAIN_DC:-${DOMAIN_DC}}
@@ -35,6 +38,27 @@ appSetup () {
 		HOSTIP_OPTION=""
 	fi
 
+	# Set xattr options
+	if [[ "${ACLSTORAGE}" != "DEFAULT" ]]; then
+		# --use-xattrs removed in 4.9!
+		#ACLSTORAGE_OPTIONS=(--option="vfs objects = acl_xattr xattr_tdb" --use-xattrs=no) 
+		# https://github.com/lxc/lxc/issues/2708#issuecomment-1865674625
+		ACLSTORAGE_OPTIONS=(
+			--option="vfs objects = dfs_samba4 acl_xattr xattr_tdb"
+			--option="acl_xattr:security_acl_name = user.NTACL"
+		)
+		#TODO: Add nfs4acl_xattr as another option?
+		# https://lists.samba.org/archive/samba/2021-February/234326.html
+		#ACLSTORAGE_OPTIONS=(
+		#	--option="vfs objects = dfs_samba4 posixacl nfs4acl_xattr acl_xattr"
+		#	--option="nfs4acl_xattr:encoding = nfs"
+		#	--option="nfs4acl_xattr:default acl style = windows"
+		#	--option="nfs4acl_xattr:xattr_name = user.nfs4_acl"
+		#)
+	else
+		ACLSTORAGE_OPTIONS=()
+	fi
+
 	# Set up samba
 	mv /etc/krb5.conf /etc/krb5.conf.orig
 	echo "[libdefaults]" > /etc/krb5.conf
@@ -48,12 +72,26 @@ appSetup () {
 		mv /etc/samba/smb.conf /etc/samba/smb.conf.orig
 		if [[ ${JOIN,,} == "true" ]]; then
 			if [[ ${JOINSITE} == "NONE" ]]; then
-				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL
+				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL \
+				"${ACLSTORAGE_OPTIONS[@]}" --option="idmap config * : range = ${IDLOWER}-${IDUPPER}"
 			else
-				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE}
+				samba-tool domain join ${LDOMAIN} DC -U"${URDOMAIN}\administrator" --password="${DOMAINPASS}" --dns-backend=SAMBA_INTERNAL --site=${JOINSITE} \
+				"${ACLSTORAGE_OPTIONS[@]}" --option="idmap config * : range = ${IDLOWER}-${IDUPPER}"
 			fi
 		else
-			samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS} ${HOSTIP_OPTION}
+			# https://github.com/lxc/lxc/issues/2708#issuecomment-473466062 ... -544 is BUILTIN\Administrators
+			printf '%s\n' \
+				"dn: CN=S-1-5-32-544"\
+				"cn: S-1-5-32-544"\
+				"objectClass: sidMap"\
+				"objectSid: S-1-5-32-544"\
+				"type: ID_TYPE_BOTH"\
+				"xidNumber: ${IDLOWER}"\
+				"distinguishedName: CN=S-1-5-32-544" >>  /usr/share/samba/setup/idmap_init.ldif
+			sed -i "s/3000000/${IDLOWER}/g" /usr/share/samba/setup/idmap_init.ldif
+			sed -i "s/4000000/${IDUPPER}/g" /usr/share/samba/setup/idmap_init.ldif
+			samba-tool domain provision --use-rfc2307 --domain=${URDOMAIN} --realm=${UDOMAIN} --server-role=dc --dns-backend=SAMBA_INTERNAL --adminpass=${DOMAINPASS} ${HOSTIP_OPTION} \
+				"${ACLSTORAGE_OPTIONS[@]}" --option="idmap config * : range = ${IDLOWER}-${IDUPPER}" 
 			if [[ ${NOCOMPLEXITY,,} == "true" ]]; then
 				samba-tool domain passwordsettings set --complexity=off
 				samba-tool domain passwordsettings set --history-length=0
@@ -128,7 +166,7 @@ fixDomainUsersGroup () {
 		echo "dn: CN=Domain Users,CN=Users,${DOMAIN_DC}
 changetype: modify
 add: gidNumber
-gidNumber: 3000000" | ldbmodify -H /var/lib/samba/private/sam.ldb
+gidNumber: $((IDLOWER + 1))" | ldbmodify -H /var/lib/samba/private/sam.ldb
 		net cache flush
 	fi
 }
@@ -171,7 +209,7 @@ schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
 appStart () {
 	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
 	if [ "${1}" = "true" ]; then
-		echo "Sleeping 10 before checking on Domain Users of gid 3000000 and setting up sshPublicKey"
+		echo "Sleeping 10 before checking on Domain Users of gid $((IDLOWER + 1)) and setting up sshPublicKey"
 		sleep 10
 		fixDomainUsersGroup
 		setupSSH
