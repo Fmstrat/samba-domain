@@ -89,6 +89,7 @@ appSetup () {
         
 	# Set up supervisor
 	echo "[supervisord]" > /etc/supervisor/conf.d/supervisord.conf
+	echo "user=root" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "nodaemon=true" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "[program:ntpd]" >> /etc/supervisor/conf.d/supervisord.conf
