@@ -174,7 +174,7 @@ schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
 }
 
 appStart () {
-	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
+	/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf > /var/log/supervisor/supervisor.log 2>&1 &
 	if [ "${1}" = "true" ]; then
 		echo "Sleeping 10 before checking on Domain Users of gid 3000000 and setting up sshPublicKey"
 		sleep 10
