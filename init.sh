@@ -96,6 +96,10 @@ appSetup () {
 	echo "command=/usr/sbin/ntpd -c /etc/ntpd.conf -n" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "[program:samba]" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "command=/usr/sbin/samba -i" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "[unix_http_server]" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "username=dummy" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "password=dummy" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "file=/run/supervisord.sock" >> /etc/supervisor/conf.d/supervisord.conf
 	if [[ ${MULTISITE,,} == "true" ]]; then
 		if [[ -n $VPNPID ]]; then
 			kill $VPNPID
