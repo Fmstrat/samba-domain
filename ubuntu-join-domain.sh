@@ -14,6 +14,7 @@ USEDOMAININHOMEDIR="False"
 
 UP_DOMAIN=${DOMAIN^^}
 LO_DOMAIN=${DOMAIN,,}
+DEBIAN=$(grep "Debian GNU" /etc/issue)
 
 echo "Setting hostnames..."
 hostnamectl set-hostname ${HOSTNAME}
@@ -28,6 +29,9 @@ echo "	ccache_type = 4" >> /etc/krb5.conf
 echo "	forwardable = true" >> /etc/krb5.conf
 echo "	proxiable = true" >> /etc/krb5.conf
 echo "	fcc-mit-ticketflags = true" >> /etc/krb5.conf
+if [ -n "${DEBIAN}" ]; then
+	echo "	rdns = false" >> /etc/krb5.conf
+fi
 echo "" >> /etc/krb5.conf
 echo "[realms]" >> /etc/krb5.conf
 
@@ -71,7 +75,9 @@ echo "Configuring SSSD..."
 echo "[sssd]" > /etc/sssd/sssd.conf
 echo "domains = ${LO_DOMAIN}" >> /etc/sssd/sssd.conf
 echo "config_file_version = 2" >> /etc/sssd/sssd.conf
-echo "services = nss, pam" >> /etc/sssd/sssd.conf
+if [ -z "${DEBIAN}" ]; then
+	echo "services = nss, pam" >> /etc/sssd/sssd.conf
+fi
 echo "" >> /etc/sssd/sssd.conf
 echo "[domain/${LO_DOMAIN}]" >> /etc/sssd/sssd.conf
 echo "ad_domain = ${LO_DOMAIN}" >> /etc/sssd/sssd.conf
