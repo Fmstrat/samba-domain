@@ -92,12 +92,17 @@ appSetup () {
         
 	# Set up supervisor
 	echo "[supervisord]" > /etc/supervisor/conf.d/supervisord.conf
+	echo "user=root" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "nodaemon=true" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "[program:ntpd]" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "command=/usr/sbin/ntpd -c /etc/ntpd.conf -n" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "[program:samba]" >> /etc/supervisor/conf.d/supervisord.conf
 	echo "command=/usr/sbin/samba -i" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "[unix_http_server]" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "username=dummy" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "password=dummy" >> /etc/supervisor/conf.d/supervisord.conf
+	echo "file=/run/supervisord.sock" >> /etc/supervisor/conf.d/supervisord.conf
 	if [[ ${MULTISITE,,} == "true" ]]; then
 		if [[ -n $VPNPID ]]; then
 			kill $VPNPID
@@ -172,7 +177,7 @@ schemaIDGUID:: +8nFQ43rpkWTOgbCCcSkqA==" > /tmp/Sshpubkey.class.ldif
 }
 
 appStart () {
-	/usr/bin/supervisord > /var/log/supervisor/supervisor.log 2>&1 &
+	/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf > /var/log/supervisor/supervisor.log 2>&1 &
 	if [ "${1}" = "true" ]; then
 		echo "Sleeping 10 before checking on Domain Users of gid 3000000 and setting up sshPublicKey"
 		sleep 10
